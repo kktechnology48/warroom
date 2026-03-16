@@ -1,0 +1,2017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thousand Lights AC 20 — Election Analytics Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+  <style>
+    :root {
+      --primary: #ea580c;
+      --primary-light: #ffedd5;
+      --primary-dark: #c2410c;
+      --aiadmk: #ea580c;
+      --dmk: #b91c1c;
+      --dmk-fav: #dc2626;
+      --pmk-fav: #22c55e;
+      --tvk: #15803d;
+      --pmk: #166534;
+      --ntk: #1e3a8a;
+      --bg: #f1f5f9;
+      --bg-warm: #fefcf9;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --sidebar-width: 280px;
+      --navbar-height: 64px;
+      --radius: 14px;
+      --radius-sm: 10px;
+      --shadow-sm: 0 1px 3px rgba(15,23,42,0.05);
+      --shadow: 0 4px 14px rgba(15,23,42,0.06), 0 2px 6px rgba(15,23,42,0.04);
+      --shadow-lg: 0 12px 28px rgba(15,23,42,0.08), 0 4px 12px rgba(15,23,42,0.04);
+      --transition: 0.22s ease;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: linear-gradient(160deg, var(--bg-warm) 0%, var(--bg) 35%, #eef2f7 100%);
+      background-attachment: fixed;
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 5px; }
+    ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 5px; }
+    ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; height: var(--navbar-height);
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      border-bottom: 2px solid rgba(234,88,12,0.4);
+      padding: 0 28px; z-index: 1000;
+      display: flex; align-items: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    .navbar-brand {
+      display: inline-flex; align-items: center; gap: 14px;
+      color: #f8fafc !important; text-decoration: none; font-weight: 800; font-size: 15px; letter-spacing: 0.03em;
+    }
+    .navbar-brand i, .navbar-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: #fff; font-size: 16px;
+      display: inline-flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(234,88,12,0.35);
+    }
+    .navbar .nav-link {
+      color: #94a3b8 !important; font-weight: 600; padding: 10px 16px !important; border-radius: var(--radius-sm);
+      transition: var(--transition);
+    }
+    .navbar .nav-link:hover { color: #fff !important; background: rgba(255,255,255,0.06); }
+    .navbar .nav-link.active { color: #fff !important; background: rgba(234,88,12,0.2); }
+
+    #sidebar {
+      position: fixed; top: var(--navbar-height); left: 0; bottom: 0; width: var(--sidebar-width);
+      background: linear-gradient(180deg, #0f172a 0%, #0c1222 50%, #0a0f1a 100%);
+      border-right: 1px solid rgba(51,65,85,0.5); overflow-y: auto; z-index: 900;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.08);
+    }
+    #sidebar .sidebar-heading {
+      padding: 22px 20px 12px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em; color: #64748b;
+    }
+    #sidebar .nav { padding: 8px 14px; list-style: none; }
+    #sidebar .nav-item { margin-bottom: 2px; }
+    #sidebar .nav-link {
+      display: flex; align-items: center; gap: 14px; padding: 12px 16px;
+      font-size: 13px; font-weight: 500; color: #94a3b8 !important; text-decoration: none;
+      border-radius: var(--radius-sm); transition: var(--transition); border-left: 3px solid transparent;
+    }
+    #sidebar .nav-link:hover { background: rgba(30,41,59,0.6); color: #f8fafc !important; }
+    #sidebar .nav-link.active {
+      background: rgba(234,88,12,0.12); color: #f8fafc !important; font-weight: 600;
+      border-left-color: var(--primary);
+    }
+    #sidebar .nav-link i { width: 22px; text-align: center; font-size: 14px; opacity: 0.95; }
+    #sidebar .sidebar-subnav { list-style: none; padding-left: 0; }
+    #sidebar .sidebar-subnav .nav-link { font-size: 12px; padding: 8px 12px; color: #94a3b8 !important; }
+    #sidebar .sidebar-subnav .nav-link:hover { color: #f8fafc !important; }
+    #sidebar .sidebar-subnav .nav-link.active { color: #f8fafc !important; border-left-color: var(--primary); }
+
+    /* Offcanvas sidebar (mobile/tablet) */
+    #sidebarOffcanvas .offcanvas-body { padding: 0; }
+    .nav-mobile .nav-link-mobile {
+      display: flex; align-items: center; gap: 12px; padding: 12px 20px;
+      font-size: 13px; font-weight: 500; color: #94a3b8 !important; text-decoration: none;
+      border-radius: 0; border-left: 3px solid transparent; transition: var(--transition);
+    }
+    .nav-mobile .nav-link-mobile:hover { background: rgba(30,41,59,0.6); color: #f8fafc !important; }
+    .nav-mobile .nav-link-mobile.active {
+      background: rgba(234,88,12,0.12); color: #f8fafc !important; font-weight: 600;
+      border-left-color: var(--primary);
+    }
+    .nav-mobile .nav-link-mobile i { width: 22px; text-align: center; font-size: 14px; opacity: 0.95; }
+
+    .main-wrap { margin-left: var(--sidebar-width); margin-top: var(--navbar-height); min-height: calc(100vh - var(--navbar-height)); }
+    .main-wrap .container-fluid { padding: 36px 44px 56px; max-width: 1600px; margin: 0 auto; }
+    @media (max-width: 991.98px) {
+      #sidebar { width: 100%; position: relative; top: 0; }
+      .main-wrap { margin-left: 0; margin-top: var(--navbar-height); }
+    }
+
+    .hero-dash, .hero-section {
+      background: linear-gradient(135deg, #ffffff 0%, #fffbf7 50%, #ffffff 100%);
+      border: 1px solid rgba(234,88,12,0.12);
+      border-left: 5px solid var(--primary);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 36px 40px 38px 44px; margin-bottom: 36px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-dash::after, .hero-section::after {
+      content: ''; position: absolute; top: -50%; right: -20%; width: 60%; height: 200%;
+      background: radial-gradient(ellipse, rgba(234,88,12,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-dash h1, .hero-section .hero-title {
+      font-family: 'Libre Baskerville', serif; font-size: 28px; font-weight: 700; color: #0f172a;
+      margin-bottom: 10px; letter-spacing: -0.03em; line-height: 1.3; position: relative; z-index: 1;
+    }
+    .hero-dash h1 i, .hero-section .hero-title i {
+      margin-right: 14px; color: var(--primary); font-size: 24px;
+    }
+    .hero-dash .lead, .hero-description { font-size: 15px; color: var(--text-muted); line-height: 1.65; position: relative; z-index: 1; }
+    .hero-subtitle { font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.1em; position: relative; z-index: 1; }
+    .hero-badge {
+      display: inline-block; margin-bottom: 14px; padding: 8px 16px; background: linear-gradient(135deg, var(--primary-light) 0%, #fff7ed 100%);
+      color: var(--primary-dark); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;
+      border-radius: 999px; border: 1px solid rgba(234,88,12,0.2); position: relative; z-index: 1;
+    }
+    /* Charts */
+    .charts-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 32px;
+    }
+    .chart-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 26px 28px;
+      transition: box-shadow var(--transition), transform var(--transition), border-color var(--transition);
+      box-shadow: var(--shadow-sm);
+    }
+    .chart-card:hover {
+      box-shadow: var(--shadow-lg); transform: translateY(-2px);
+      border-color: rgba(234,88,12,0.2);
+    }
+    .chart-header h3 { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 4px; letter-spacing: -0.01em; }
+    .chart-header p { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; font-weight: 500; }
+    .chart-container { position: relative; }
+    .chart-container canvas { max-height: 260px; }
+    .chart-legend { display: flex; flex-wrap: wrap; gap: 12px 18px; justify-content: center; align-items: center; margin-top: 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); }
+    .chart-legend i { font-size: 7px; margin-right: 5px; vertical-align: middle; }
+    .chart-legend .legend-dot { width: 10px; height: 10px; border-radius: 4px; display: inline-block; flex-shrink: 0; }
+    @media (max-width: 768px) {
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+    /* Animations */
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    /* Viewport-only: .visible added by IntersectionObserver when in view */
+    .animate-on-scroll { opacity: 0; transform: translateY(16px); transition: opacity 0.5s ease, transform 0.5s ease; }
+    .animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
+    .page-section { scroll-margin-top: 80px; margin-bottom: 40px; }
+
+    .section-title {
+      font-size: 11px; font-weight: 800; color: var(--text-muted); margin-bottom: 22px;
+      display: flex; align-items: center; gap: 14px; text-transform: uppercase; letter-spacing: 0.12em;
+      padding-bottom: 12px; border-bottom: 3px solid var(--border);
+    }
+    .section-title i {
+      width: 32px; height: 32px; min-width: 32px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary-light) 0%, #fff7ed 100%);
+      color: var(--primary); display: inline-flex; align-items: center; justify-content: center;
+      font-size: 13px; flex-shrink: 0; border: 1px solid rgba(234,88,12,0.15);
+    }
+
+    .metric-card {
+      background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--primary);
+      border-radius: 0 var(--radius) var(--radius) 0; padding: 26px 28px;
+      display: flex; align-items: center; gap: 20px;
+      box-shadow: var(--shadow-sm); transition: box-shadow var(--transition), transform var(--transition);
+    }
+    .metric-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); }
+    .metric-icon {
+      width: 56px; height: 56px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0;
+    }
+    .metric-card.metric-blue { border-left-color: #0ea5e9; }
+    .metric-card.metric-blue .metric-icon { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); color: #0284c7; }
+    .metric-card.metric-green { border-left-color: #16a34a; }
+    .metric-card.metric-green .metric-icon { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); color: #15803d; }
+    .metric-card.metric-purple { border-left-color: #7c3aed; }
+    .metric-card.metric-purple .metric-icon { background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); color: #6d28d9; }
+    .metric-card.metric-orange { border-left-color: var(--primary); }
+    .metric-card.metric-orange .metric-icon { background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); color: var(--primary-dark); }
+    .metric-info { flex: 1; min-width: 0; }
+    .metric-value { font-size: 26px; font-weight: 800; color: var(--text); line-height: 1.2; letter-spacing: -0.03em; }
+    .metric-label { font-size: 13px; font-weight: 700; color: var(--text-muted); margin-top: 6px; }
+    .metric-subtext { font-size: 11px; color: var(--text-muted); margin-top: 4px; opacity: 0.92; font-weight: 500; }
+
+    .card {
+      border: 1px solid var(--border); border-radius: var(--radius);
+      box-shadow: var(--shadow-sm); transition: box-shadow var(--transition), border-color var(--transition), transform 0.25s ease;
+      overflow: hidden;
+    }
+    .card:hover { box-shadow: var(--shadow-lg); border-color: rgba(15,23,42,0.08); transform: translateY(-2px); }
+    .card-header {
+      font-weight: 800; font-size: 14px; color: var(--text);
+      border-bottom: 2px solid var(--border); padding: 18px 24px;
+      border-radius: var(--radius) var(--radius) 0 0;
+      letter-spacing: 0.02em;
+    }
+    .card-header.bg-success, .card-header.bg-danger, .card-header.bg-warning, .card-header.bg-primary, .card-header.bg-secondary { color: #fff; border-bottom-color: rgba(0,0,0,0.12); }
+    .table { font-size: 13px; }
+    .table th {
+      font-weight: 700; color: #475569; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+      background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); border-bottom: 2px solid var(--border); padding: 14px 18px;
+    }
+    .table td { padding: 14px 18px; vertical-align: middle; }
+    .table-hover tbody tr { transition: background var(--transition); }
+    .table-hover tbody tr:hover { background: #f8fafc; }
+    .table-sm th, .table-sm td { padding: 10px 14px; }
+
+    .badge-aiadmk { background: #fff7ed; color: var(--aiadmk); font-weight: 700; padding: 6px 14px; border-radius: var(--radius-sm); }
+    .badge-dmk { background: #fef2f2; color: var(--dmk); font-weight: 700; padding: 6px 14px; border-radius: var(--radius-sm); }
+    .badge-tvk { background: #f0fdf4; color: var(--tvk); font-weight: 700; padding: 6px 14px; border-radius: var(--radius-sm); }
+    .badge-pmk { background: #f0fdf4; color: var(--pmk); font-weight: 700; padding: 6px 14px; border-radius: var(--radius-sm); }
+
+    .list-group-item { border-left: 4px solid transparent; padding: 14px 18px; font-size: 13px; transition: background var(--transition); }
+    .list-group-item.swot-s { border-left-color: #16a34a; }
+    .list-group-item.swot-w { border-left-color: #dc2626; }
+    .list-group-item.swot-o { border-left-color: #d97706; }
+    .list-group-item.swot-t { border-left-color: #374151; }
+
+    /* SWOT Section — card-based design */
+    #swot.swot-section .card { border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; transition: box-shadow var(--transition), transform 0.25s ease; }
+    #swot.swot-section .card:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); }
+    #swot.swot-section .card-header {
+      padding: 18px 22px; font-weight: 800; font-size: 14px; letter-spacing: 0.02em;
+      border: none; border-bottom: 3px solid rgba(0,0,0,0.08);
+    }
+    #swot.swot-section .card-header.bg-success { background: linear-gradient(135deg, #15803d 0%, #16a34a 50%, #22c55e 100%) !important; color: #fff !important; }
+    #swot.swot-section .card-header.bg-danger { background: linear-gradient(135deg, #b91c1c 0%, #dc2626 50%, #ef4444 100%) !important; color: #fff !important; }
+    #swot.swot-section .card-header.bg-secondary { background: linear-gradient(135deg, #374151 0%, #4b5563 50%, #6b7280 100%) !important; color: #fff !important; }
+    #swot.swot-section .card-header.bg-primary { background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%) !important; color: #fff !important; }
+    #swot.swot-section .card-header[style*="15803d"] { background: linear-gradient(135deg, #166534 0%, #15803d 50%, #22c55e 100%) !important; color: #fff !important; border: none !important; border-bottom: 3px solid rgba(0,0,0,0.08) !important; }
+    #swot.swot-section .swot-body {
+      padding: 18px 20px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    }
+    #swot.swot-section .swot-item {
+      display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0; border-left: 4px solid;
+      font-size: 13px; line-height: 1.65; color: var(--text); transition: background 0.2s ease;
+      min-height: 0;
+    }
+    #swot.swot-section .swot-item:hover { background: rgba(0,0,0,0.02); }
+    #swot.swot-section .swot-item .swot-icon { flex-shrink: 0; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #fff; }
+    #swot.swot-section .swot-item.swot-s .swot-icon { background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); }
+    #swot.swot-section .swot-item.swot-w .swot-icon { background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); }
+    #swot.swot-section .swot-item.swot-o .swot-icon { background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%); }
+    #swot.swot-section .swot-item.swot-t .swot-icon { background: linear-gradient(135deg, #374151 0%, #4b5563 100%); }
+    #swot.swot-section .swot-item.swot-s { border-left-color: #16a34a; background: linear-gradient(90deg, rgba(22,163,74,0.06) 0%, transparent 100%); }
+    #swot.swot-section .swot-item.swot-w { border-left-color: #dc2626; background: linear-gradient(90deg, rgba(220,38,38,0.06) 0%, transparent 100%); }
+    #swot.swot-section .swot-item.swot-o { border-left-color: #d97706; background: linear-gradient(90deg, rgba(217,119,6,0.06) 0%, transparent 100%); }
+    #swot.swot-section .swot-item.swot-t { border-left-color: #374151; background: linear-gradient(90deg, rgba(55,65,81,0.06) 0%, transparent 100%); }
+    #swot.swot-section .swot-label { font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: inherit; margin-bottom: 4px; display: block; }
+    #swot.swot-section .swot-item.swot-s .swot-label { color: #15803d; }
+    #swot.swot-section .swot-item.swot-w .swot-label { color: #b91c1c; }
+    #swot.swot-section .swot-item.swot-o .swot-label { color: #b45309; }
+    #swot.swot-section .swot-item.swot-t .swot-label { color: #1f2937; }
+    #swot.swot-section .swot-text { flex: 1; min-width: 0; }
+    @media (max-width: 767px) {
+      #swot.swot-section .swot-body { grid-template-columns: 1fr; }
+    }
+
+    .accordion-button { font-weight: 700; font-size: 14px; transition: var(--transition); }
+    .accordion-button:not(.collapsed) { background: linear-gradient(90deg, #fff7ed 0%, #fffbeb 100%); color: var(--text); box-shadow: none; }
+    .accordion-button:focus { box-shadow: none; border-color: var(--border); }
+    .accordion-body { font-size: 14px; color: var(--text-muted); line-height: 1.75; }
+    #accordionIssues .accordion-item { border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 10px; overflow: hidden; box-shadow: var(--shadow-sm); transition: box-shadow var(--transition); }
+    #accordionIssues .accordion-item:hover { box-shadow: var(--shadow); }
+    #accordionIssues .accordion-item:last-child { margin-bottom: 0; }
+    #accordionIssues .accordion-button::before { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #fff; font-size: 12px; font-weight: 800; margin-right: 14px; }
+    #accordionIssues .accordion-button[data-issue-num="1"]::before { content: "1"; }
+    #accordionIssues .accordion-button[data-issue-num="2"]::before { content: "2"; }
+    #accordionIssues .accordion-button[data-issue-num="3"]::before { content: "3"; }
+    #accordionIssues .accordion-button[data-issue-num="4"]::before { content: "4"; }
+    #accordionIssues .accordion-button[data-issue-num="5"]::before { content: "5"; }
+    #accordionIssues .accordion-body { padding: 20px 24px; font-size: 15px; line-height: 1.8; color: var(--text); }
+
+    .dynamics-block { border-left: 4px solid var(--primary); background: linear-gradient(135deg, #fffbf7 0%, #fff7ed 100%); transition: box-shadow var(--transition); }
+    .dynamics-block:hover { box-shadow: var(--shadow); }
+
+    .electoral-behavior-section { margin-top: 1.5rem; }
+    .electoral-behavior-title { font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); padding-bottom: 8px; border-bottom: 2px solid var(--border); display: flex; align-items: center; }
+    .electoral-behavior-title i { color: var(--primary); }
+    .electoral-behavior-card { transition: box-shadow 0.25s ease, transform 0.2s ease; border-radius: var(--radius); overflow: hidden; }
+    .electoral-behavior-card:hover { box-shadow: 0 12px 28px rgba(15,23,42,0.08) !important; transform: translateY(-2px); }
+
+    .party-card { border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: box-shadow var(--transition), transform 0.25s ease; }
+    .party-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+    .party-card .card-body { padding: 20px 24px; }
+    .party-card .party-block { margin-bottom: 1rem; font-size: 14px; line-height: 1.75; color: var(--text); }
+    .party-card .party-block:last-child { margin-bottom: 0; }
+    .party-card .party-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 6px; }
+    .parties-subtitle { font-size: 13px; color: var(--text-muted); margin-top: -4px; margin-bottom: 20px; font-weight: 500; }
+
+    .blocks-table-wrap { border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--border); transition: box-shadow var(--transition); }
+    .blocks-table-wrap:hover { box-shadow: var(--shadow-lg); }
+    .blocks-table { font-size: 14px; margin-bottom: 0 !important; }
+    .blocks-table thead th { background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important; color: #f8fafc !important; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; padding: 16px 20px; border: none; }
+    .blocks-table tbody td { padding: 18px 20px; vertical-align: top; line-height: 1.65; border-color: var(--border); }
+    .blocks-table tbody tr { transition: background var(--transition); }
+    .blocks-table tbody tr:hover { background: #f8fafc; }
+    .blocks-table tbody tr:nth-child(even) { background: #fafbfc; }
+    .blocks-table tbody tr:nth-child(even):hover { background: #f1f5f9; }
+    .blocks-table .block-name { font-weight: 700; color: var(--text); }
+    .blocks-table .strong-party { font-weight: 700; color: var(--primary-dark); }
+
+    .card-footer {
+      background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); border-top: 1px solid var(--border);
+      padding: 14px 22px; font-size: 13px; color: var(--text-muted); border-radius: 0 0 var(--radius) var(--radius);
+    }
+    .card-body { padding: 24px 26px; font-size: 15px; line-height: 1.72; color: var(--text); }
+    .card-body p { color: var(--text); margin-bottom: 0.9rem; }
+    section.mb-5 { margin-bottom: 3rem !important; }
+    .subheading { font-size: 14px; font-weight: 800; color: var(--text); margin: 1.4rem 0 0.5rem; padding-bottom: 8px; border-bottom: 2px solid var(--border); letter-spacing: 0.02em; }
+    .subheading:first-of-type { margin-top: 0; }
+    #boothGrid {
+      display: flex; flex-wrap: wrap; gap: 4px; padding: 18px; background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+      border-radius: var(--radius); margin-bottom: 16px; border: 1px solid var(--border);
+    }
+    #boothGrid [data-booth] {
+      width: 14px; height: 14px; border-radius: 4px; cursor: default;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    #boothGrid [data-booth]:hover { transform: scale(1.35); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .booth-tooltip {
+      position: fixed;
+      left: 0;
+      top: 0;
+      padding: 6px 10px;
+      background: #1e293b;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0;
+      transform: translate(-50%, 4px);
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    .booth-tooltip.is-visible {
+      opacity: 1 !important;
+      transform: translate(-50%, -100%) translateY(-8px) !important;
+    }
+    .data-table th { background: #f8fafc !important; }
+
+    .charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 2rem; }
+    @media (max-width: 991px) { .charts-grid { grid-template-columns: 1fr; } }
+    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; transition: box-shadow 0.3s ease, transform 0.2s ease; }
+    .chart-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+    .chart-card .chart-header { padding: 16px 20px; border-bottom: 2px solid var(--border); font-weight: 700; font-size: 14px; color: var(--text); }
+    .chart-container { padding: 20px; height: 280px; position: relative; display: flex; justify-content: center; }
+    .chart-container canvas { max-height: 260px; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes swotLiSlideIn { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: translateX(0); } }
+    /* Viewport-only: each element gets .in-view or .visible when that element enters view (per-element observer) */
+    .metric-card { opacity: 0; transform: translateY(16px); }
+    .metric-card.in-view { animation: fadeInUp 0.5s ease forwards; }
+    .charts-grid .chart-card { opacity: 0; transform: translateY(16px); }
+    #swot .row > [class*="col-"] .card { opacity: 0; transform: translateY(20px); }
+    #swot .row > [class*="col-"] .card.in-view { animation: fadeInUp 0.5s ease forwards; }
+    /* 10. Tall Leaders — no animation, always visible */
+    #leaders .leader-card,
+    #leaders.section-reveal > * { opacity: 1; transform: none; }
+    #leaders .leader-card.in-view,
+    #leaders.section-reveal > *.in-view { animation: none; }
+
+    /* Section content: each direct child animates only when that element is in viewport (per-element) */
+    @keyframes sectionRevealIn { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+    .section-reveal > * { opacity: 0; transform: translateY(24px); }
+    .section-reveal > *.in-view { animation: sectionRevealIn 0.5s ease forwards; }
+    /* Dashboard: keep content visible so Electoral Overview and charts always show */
+    #dashboard.section-reveal > * { opacity: 1; transform: none; }
+    #dashboard.section-reveal > *.in-view { animation: none; }
+    #dashboard .charts-grid .chart-card { opacity: 1; transform: none; }
+    .section-reveal { scroll-margin-top: 88px; }
+
+    /* Tall Leaders — profile blocks */
+    .leader-card { border-left-width: 4px; }
+    .leader-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+    .leader-block { margin-bottom: 1rem; }
+    .leader-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--primary); margin-bottom: 0.25rem; }
+    .leader-text { font-size: 13px; line-height: 1.6; color: var(--text); }
+    .leader-winnability { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-left: 4px solid var(--primary); padding: 0.75rem 1rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 13px; margin-top: 0.75rem; }
+
+    /* Tall Leaders — section design */
+    #leaders.leaders-section .leaders-intro { font-size: 14px; color: var(--text-muted); max-width: 720px; margin-bottom: 1.75rem; }
+    #leaders.leaders-section .leader-card {
+      border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm);
+      overflow: hidden; transition: box-shadow var(--transition), transform 0.25s ease;
+    }
+    #leaders.leaders-section .leader-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); }
+    #leaders.leaders-section .leader-card .card-header {
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 20px 26px;
+      border: none; border-bottom: 3px solid rgba(0,0,0,0.06);
+    }
+    #leaders.leaders-section .leader-card .leader-rank {
+      width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 800; color: #fff; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    #leaders.leaders-section .leader-card[style*="--aiadmk"] .leader-rank { background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); }
+    #leaders.leaders-section .leader-card[style*="--dmk"] .leader-rank { background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%); }
+    #leaders.leaders-section .leader-card[style*="64748b"] .leader-rank { background: linear-gradient(135deg, #475569 0%, #334155 100%); }
+    #leaders.leaders-section .leader-card[style*="374151"] .leader-rank { background: linear-gradient(135deg, #374151 0%, #1f2937 100%); }
+    #leaders.leaders-section .leader-card .card-header .leader-name-wrap { flex: 1; min-width: 0; }
+    #leaders.leaders-section .leader-card .card-header .leader-name { font-size: 20px; font-weight: 800; margin: 0; letter-spacing: -0.02em; line-height: 1.25; }
+    #leaders.leaders-section .leader-card .card-header.bg-warning { background: linear-gradient(135deg, #f59e0b 0%, #ea580c 50%, #c2410c 100%) !important; color: #fff !important; }
+    #leaders.leaders-section .leader-card .card-header.bg-danger { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%) !important; color: #fff !important; }
+    #leaders.leaders-section .leader-card .card-header.bg-secondary { background: linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%) !important; color: #fff !important; }
+    #leaders.leaders-section .leader-card .card-header.bg-dark { background: linear-gradient(135deg, #374151 0%, #1f2937 50%, #111827 100%) !important; color: #fff !important; }
+    #leaders.leaders-section .leader-card .card-header .badge { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.4); }
+    #leaders.leaders-section .leader-card .card-body { padding: 24px 26px; }
+    #leaders.leaders-section .leader-meta {
+      font-size: 13px; color: var(--text-muted); margin-bottom: 1.25rem; padding: 12px 16px;
+      background: linear-gradient(90deg, #f8fafc 0%, #f1f5f9 100%); border-radius: var(--radius-sm);
+      border: 1px solid var(--border); border-left: 3px solid var(--primary);
+    }
+    #leaders.leaders-section .leader-block {
+      margin-bottom: 1.15rem; padding: 16px 18px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      border-left: 4px solid var(--primary); background: linear-gradient(90deg, rgba(234,88,12,0.04) 0%, transparent 100%);
+      transition: background 0.2s ease;
+    }
+    #leaders.leaders-section .leader-block:hover { background: linear-gradient(90deg, rgba(234,88,12,0.07) 0%, transparent 100%); }
+    #leaders.leaders-section .leader-block .leader-label {
+      font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--primary-dark); margin-bottom: 6px;
+    }
+    #leaders.leaders-section .leader-block .leader-text { font-size: 14px; line-height: 1.7; color: var(--text); }
+    #leaders.leaders-section .leader-winnability {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-left: 4px solid #16a34a;
+      padding: 18px 22px; border-radius: 0 var(--radius) var(--radius) 0; font-size: 14px; line-height: 1.72;
+      margin-top: 1.25rem; color: var(--text); font-weight: 500; box-shadow: 0 2px 8px rgba(22,163,74,0.08);
+    }
+    #leaders.leaders-section .leader-winnability strong { color: #15803d; }
+
+    /* Top 5 Deciding Factors — numbered cards */
+    .factor-card { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: box-shadow var(--transition), transform var(--transition); height: 100%; }
+    .factor-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+    .factor-card .factor-num { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #fff; flex-shrink: 0; }
+    .factor-card .factor-title { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.35; margin-bottom: 0.5rem; }
+    .factor-card .factor-body { font-size: 14px; line-height: 1.7; color: var(--text-muted); }
+    .factor-card.factor-1 .factor-num { background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); }
+    .factor-card.factor-1 { border-left: 4px solid #0ea5e9; }
+    .factor-card.factor-2 .factor-num { background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); }
+    .factor-card.factor-2 { border-left: 4px solid #16a34a; }
+    .factor-card.factor-3 .factor-num { background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%); }
+    .factor-card.factor-3 { border-left: 4px solid #b91c1c; }
+    .factor-card.factor-4 .factor-num { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); }
+    .factor-card.factor-4 { border-left: 4px solid #7c3aed; }
+    .factor-card.factor-5 .factor-num { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); }
+    .factor-card.factor-5 { border-left: 4px solid var(--primary); }
+
+    /* Winning Formula — formula items */
+    .formula-item { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 0 var(--radius) var(--radius) 0; padding: 1.25rem 1.5rem; margin-bottom: 1rem; transition: box-shadow var(--transition), transform 0.2s ease; height: 100%; }
+    .formula-item:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+    .formula-item:last-child { margin-bottom: 0; }
+    .formula-item .formula-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 8px; background: var(--primary-light); color: var(--primary-dark); font-size: 13px; font-weight: 800; margin-right: 0.75rem; flex-shrink: 0; }
+    .formula-item .formula-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 0.4rem; line-height: 1.35; }
+    .formula-item .formula-body { font-size: 14px; line-height: 1.7; color: var(--text-muted); margin: 0; }
+    #winning .formula-grid .formula-item { margin-bottom: 0; }
+
+    /* Prediction section */
+    .prediction-hero { border-left: 4px solid #16a34a; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); }
+    .rationale-block { border-left: 4px solid #0ea5e9; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); }
+    .scenario-card { height: 100%; transition: box-shadow var(--transition), transform var(--transition); }
+    .scenario-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+    .scenario-badge { font-size: 11px; font-weight: 800; letter-spacing: 0.05em; padding: 4px 10px; border-radius: 999px; }
+    .tvk-factor { border-left: 4px solid var(--tvk); background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); }
+    .tvk-factor .tvk-badge { font-size: 10px; font-weight: 800; letter-spacing: 0.12em; color: var(--tvk); }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#"><i class="fas fa-map-location-dot me-2"></i>Chepauk–Thiruvallikeni AC 19 — Election Analytics</a>
+      <button class="navbar-toggler d-lg-none ms-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas" aria-controls="sidebarOffcanvas" aria-label="Open menu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Offcanvas sidebar for mobile & tablet -->
+  <div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel" data-bs-backdrop="true" data-bs-scroll="true">
+    <div class="offcanvas-header border-bottom border-secondary">
+      <h5 class="offcanvas-title text-uppercase fw-800 text-secondary" id="sidebarOffcanvasLabel" style="font-size:10px; letter-spacing:0.14em;">Sections</h5>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body p-0" style="background: linear-gradient(180deg, #0f172a 0%, #0c1222 100%);">
+      <ul class="nav flex-column nav-mobile">
+        <li class="nav-item"><a class="nav-link nav-link-mobile active" href="#dashboard" data-bs-dismiss="offcanvas"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link nav-link-mobile" href="#overview" data-bs-dismiss="offcanvas"><i class="fas fa-layer-group"></i> 1. Assembly Overview</a></li>
+        <li class="nav-item"><a class="nav-link nav-link-mobile" href="#snapshot" data-bs-dismiss="offcanvas"><i class="fas fa-table-list"></i> 2. Assembly Snapshot</a></li>
+        <li class="nav-item"><a class="nav-link nav-link-mobile" href="#results" data-bs-dismiss="offcanvas"><i class="fas fa-poll"></i> 3. Election Results</a></li>
+        <li class="nav-item"><a class="nav-link nav-link-mobile py-1 ps-4" href="#form20" data-bs-dismiss="offcanvas"><i class="fas fa-table-cells"></i> Form 20 Analysis</a></li>
+        <li class="nav-item"><a class="nav-link nav-link-mobile" href="#caste" data-bs-dismiss="offcanvas"><i class="fas fa-people-group"></i> 4. Caste Composition</a></li>
+        <li class="nav-item"><a class="nav-link nav-link-mobile" href="#blocks" data-bs-dismiss="offcanvas"><i class="fas fa-map"></i> 5. Block Names</a></li>
+        <li class="nav-item"><a class="nav-link nav-link-mobile" href="#parties" data-bs-dismiss="offcanvas"><i class="fas fa-handshake"></i> 6. Political Parties</a></li>
+        <li class="nav-item"><a class="nav-link nav-link-mobile" href="#dynamics" data-bs-dismiss="offcanvas"><i class="fas fa-bullseye"></i> 7. Political Dynamics</a></li>
+        <li class="nav-item"><a class="nav-link nav-link-mobile" href="#issues" data-bs-dismiss="offcanvas"><i class="fas fa-exclamation-circle"></i> 8. Key Issues</a></li>
+        <li class="nav-item"><a class="nav-link nav-link-mobile" href="#swot" data-bs-dismiss="offcanvas"><i class="fas fa-brain"></i> 9. SWOT</a></li>
+        <li class="nav-item"><a class="nav-link nav-link-mobile" href="#leaders" data-bs-dismiss="offcanvas"><i class="fas fa-crown"></i> 10. Tall Leaders</a></li>
+        <li class="nav-item"><a class="nav-link nav-link-mobile" href="#deciding" data-bs-dismiss="offcanvas"><i class="fas fa-scale-balanced"></i> 11. Top 5 Deciding Factors</a></li>
+        <li class="nav-item"><a class="nav-link nav-link-mobile" href="#winning" data-bs-dismiss="offcanvas"><i class="fas fa-flask"></i> 12. Winning Formula</a></li>
+        <li class="nav-item"><a class="nav-link nav-link-mobile" href="#prediction" data-bs-dismiss="offcanvas"><i class="fas fa-chart-line"></i> 13. Upcoming Election Prediction</a></li>
+        <li class="nav-item"><a class="nav-link nav-link-mobile" href="#tvk" data-bs-dismiss="offcanvas"><i class="fas fa-bolt"></i> 14. TVK Factor</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="d-flex">
+    <!-- Sidebar (desktop) -->
+    <nav id="sidebar" class="d-none d-lg-block">
+      <div class="sidebar-heading">Sections</div>
+      <ul class="nav flex-column">
+        <li class="nav-item"><a class="nav-link active" href="#dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="#overview"><i class="fas fa-layer-group"></i> 1. Assembly Overview</a></li>
+        <li class="nav-item"><a class="nav-link" href="#snapshot"><i class="fas fa-table-list"></i> 2. Assembly Snapshot</a></li>
+        <li class="nav-item">
+          <a class="nav-link" href="#results"><i class="fas fa-poll"></i> 3. Election Results</a>
+          <ul class="nav flex-column ms-3 mt-1 sidebar-subnav">
+            <li class="nav-item"><a class="nav-link py-1" href="#form20"><i class="fas fa-table-cells"></i> Form 20 Analysis</a></li>
+          </ul>
+        </li>
+        <li class="nav-item"><a class="nav-link" href="#caste"><i class="fas fa-people-group"></i> 4. Caste Composition</a></li>
+        <li class="nav-item"><a class="nav-link" href="#blocks"><i class="fas fa-map"></i> 5. Block Names</a></li>
+        <li class="nav-item"><a class="nav-link" href="#parties"><i class="fas fa-handshake"></i> 6. Political Parties</a></li>
+        <li class="nav-item"><a class="nav-link" href="#dynamics"><i class="fas fa-bullseye"></i> 7. Political Dynamics</a></li>
+        <li class="nav-item"><a class="nav-link" href="#issues"><i class="fas fa-exclamation-circle"></i> 8. Key Issues</a></li>
+        <li class="nav-item"><a class="nav-link" href="#swot"><i class="fas fa-brain"></i> 9. SWOT</a></li>
+        <li class="nav-item"><a class="nav-link" href="#leaders"><i class="fas fa-crown"></i> 10. Tall Leaders</a></li>
+        <li class="nav-item"><a class="nav-link" href="#deciding"><i class="fas fa-scale-balanced"></i> 11. Top 5 Deciding Factors</a></li>
+        <li class="nav-item"><a class="nav-link" href="#winning"><i class="fas fa-flask"></i> 12. Winning Formula</a></li>
+        <li class="nav-item"><a class="nav-link" href="#prediction"><i class="fas fa-chart-line"></i> 13. Upcoming Election Prediction</a></li>
+        <li class="nav-item"><a class="nav-link" href="#tvk"><i class="fas fa-bolt"></i> 14. TVK Factor</a></li>
+      </ul>
+    </nav>
+
+    <!-- Main content -->
+    <main class="main-wrap flex-grow-1">
+      <div class="container-fluid">
+
+        <!-- Dashboard (Hero + Metrics + Charts) -->
+        <section id="dashboard" class="page-section section-reveal">
+          <div class="hero-dash">
+            
+            <p class="hero-subtitle">Constituency 19 · Complete electoral analytics</p>
+            <h1><i class="fas fa-vote-yea"></i> Chepauk–Thiruvallikeni Assembly Constituency — No. 19</h1>
+            <p class="lead mb-0">General (Unreserved) · Chennai District · Chennai Central PC No. 04 · MLA Udhayanidhi Stalin (DMK) · MP Dayanidhi Maran (DMK)</p>
+          </div>
+
+        <!-- Metric cards -->
+        <div class="row g-3 mb-4 metrics-row" id="metricsRow">
+          <div class="col-6 col-lg-3">
+            <div class="card metric-card metric-blue h-100">
+              <div class="metric-icon"><i class="fas fa-users"></i></div>
+              <div class="metric-info">
+                <div class="metric-value">1,63,866</div>
+                <div class="metric-label">Total Electors (2026 Est.)</div>
+                <div class="metric-subtext">Projected 100% urban electorate in 2026</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="card metric-card metric-green h-100">
+              <div class="metric-icon"><i class="fas fa-city"></i></div>
+              <div class="metric-info">
+                <div class="metric-value">0 : 100</div>
+                <div class="metric-label">Rural % : Urban %</div>
+                <div class="metric-subtext">Completely metropolitan · 0% rural</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="card metric-card metric-purple h-100">
+              <div class="metric-icon"><i class="fas fa-building"></i></div>
+              <div class="metric-info">
+                <div class="metric-value">235</div>
+                <div class="metric-label">Polling Booths</div>
+                <div class="metric-subtext">Form 20 total: 346 booths</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="card metric-card metric-orange h-100">
+              <div class="metric-icon"><i class="fas fa-scale-balanced"></i></div>
+              <div class="metric-info">
+                <div class="metric-value">69,355</div>
+                <div class="metric-label">2021 Victory Margin</div>
+                <div class="metric-subtext">DMK over PMK in Chepauk–Thiruvallikeni</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Electoral charts -->
+        <h2 class="section-title"><i class="fas fa-chart-bar me-2"></i>Electoral Overview</h2>
+        <div class="charts-grid" id="chartsGrid">
+          <div class="chart-card animate-on-scroll">
+            <div class="chart-header"><h3>2021 Vote Share</h3><p>Assembly election distribution</p></div>
+            <div class="chart-container"><canvas id="chartVoteShare"></canvas></div>
+            <div class="chart-legend d-flex flex-wrap justify-content-center align-items-center gap-3">
+              <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#b91c1c;"></span><span class="small">DMK 68.92%</span></span>
+              <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#22c55e;"></span><span class="small">PMK 17.68%</span></span>
+              <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#1e3a8a;"></span><span class="small">NTK 6.79%</span></span>
+              <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#0ea5e9;"></span><span class="small">IJK 3.03%</span></span>
+              <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#64748b;"></span><span class="small">AMMK 1.38% · NOTA 1.52%</span></span>
+            </div>
+          </div>
+          <div class="chart-card animate-on-scroll">
+            <div class="chart-header"><h3>Rural vs Urban</h3><p>Electorate split</p></div>
+            <div class="chart-container"><canvas id="chartRuralUrban"></canvas></div>
+            <div class="chart-legend d-flex flex-wrap justify-content-center align-items-center gap-3">
+              <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#16a34a;"></span><span class="small">Rural 0%</span></span>
+              <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#0ea5e9;"></span><span class="small">Urban 100%</span></span>
+            </div>
+          </div>
+          <div class="chart-card animate-on-scroll">
+            <div class="chart-header"><h3>Winning Margin Trend</h3><p>2011 → 2016 → 2021</p></div>
+            <div class="chart-container"><canvas id="chartMargin"></canvas></div>
+          </div>
+          <div class="chart-card animate-on-scroll">
+            <div class="chart-header"><h3>Booth Classification</h3><p>Form 20 — 360 booths</p></div>
+            <div class="chart-container"><canvas id="chartBooths"></canvas></div>
+            <div class="chart-legend d-flex flex-wrap justify-content-center align-items-center gap-3">
+              <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#b91c1c;"></span><span class="small">Ezhilan,N. Stronghold</span></span>
+              <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#dc2626;"></span><span class="small">Ezhilan,N. Favorable</span></span>
+              <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#EAB308;"></span><span class="small">Battleground</span></span>
+              <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#22c55e;"></span><span class="small">Khushbu Sundar Favorable</span></span>
+              <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#166534;"></span><span class="small">Khushbu Sundar Stronghold</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Insights -->
+        <h2 class="section-title"><i class="fas fa-lightbulb me-2"></i>Insights &amp; Takeaways</h2>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm animate-on-scroll" style="border-left:4px solid #0ea5e9 !important;">
+              <div class="card-body">
+                <div class="mb-2"><i class="fas fa-flask text-primary" style="font-size:1.25rem;"></i></div>
+                <h6 class="fw-700">“Scientific Temper” Mandate</h6>
+                <p class="small text-muted mb-0">In 2021, Dr. Ezhilan (DMK) defeated Khushbu Sundar (BJP) by 32,462 votes, with voters preferring a science-and-governance profile over celebrity appeal.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm animate-on-scroll" style="border-left:4px solid #16a34a !important;">
+              <div class="card-body">
+                <div class="mb-2"><i class="fas fa-people-group text-success" style="font-size:1.25rem;"></i></div>
+                <h6 class="fw-700">Minority–Dalit Power Core</h6>
+                <p class="small text-muted mb-0">Muslims (24–26%) and Adi Dravidars (18–20%) together anchor nearly 45% of the electorate, forming the DMK’s ideological and welfare bedrock.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm animate-on-scroll" style="border-left:4px solid #d97706 !important;">
+              <div class="card-body">
+                <div class="mb-2"><i class="fas fa-hospital text-warning" style="font-size:1.25rem;"></i></div>
+                <h6 class="fw-700">Medical &amp; Retail Hub</h6>
+                <p class="small text-muted mb-0">Home to Apollo’s Greams Road hub, consulates and luxury malls, Thousand Lights functions as Chennai’s cosmopolitan CBD and global medical tourism corridor.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm animate-on-scroll" style="border-left:4px solid #15803d !important;">
+              <div class="card-body">
+                <div class="mb-2"><i class="fas fa-bolt text-success" style="font-size:1.25rem; color:#15803d!important;"></i></div>
+                <h6 class="fw-700">TVK &amp; Youth Disruption</h6>
+                <p class="small text-muted mb-0">Vijay’s TVK is rapidly mobilizing Gen‑Z, mall-economy workers and coaching-belt students, threatening to fragment the traditional DMK–AIADMK binary.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        </section>
+
+        <!-- 1. Assembly Overview -->
+        <section id="overview" class="mb-5 page-section section-reveal">
+          <h2 class="section-title"><i class="fas fa-circle-info me-2"></i>1. Assembly Overview</h2>
+          <div class="card">
+            <div class="card-header">Assembly Overview</div>
+            <div class="card-body">
+              <p><strong>Assembly Constituency (AC): Chepauk-Thiruvallikeni (No. 19)</strong> · <strong>Parliament Constituency (PC): Chennai Central (No. 04)</strong> · <strong>District: Chennai</strong> · <strong>MLA: Udhayanidhi Stalin (DMK)</strong> · <strong>MP: Dayanidhi Maran (DMK)</strong>.</p>
+              <p><strong>Chepauk-Thiruvallikeni</strong> is the <strong>political and commercial heartbeat of Chennai</strong>, representing a dense tapestry of historic colonial heritage and modern urban intensity. Located at the city&rsquo;s geographical core, it is a General (unreserved) seat with a <strong>100% urban</strong> demographic. It functions as a <strong>prestige political laboratory</strong> where the traditional trade hubs of Triplicane intersect with the high-stakes governance of Tamil Nadu&rsquo;s administrative nerve centre.</p>
+              <h3 id="overview-history" class="subheading">History &amp; Delimitation</h3>
+              <p>Chepauk-Thiruvallikeni was created during the <strong>2008 Delimitation</strong> exercise by merging the historic <strong>Chepauk</strong> constituency—famed as a three-time winning ground for DMK patriarch <strong>M. Karunanidhi</strong> (1996, 2001, 2006)—with parts of the <strong>Triplicane</strong> constituency. The seat now covers <strong>GCC Wards 79, 81–93, 95 and 111</strong>, and remains a <strong>General category</strong> constituency. Its social fabric is woven with a significant <strong>Scheduled Caste population (~14.9%)</strong> and a substantial minority presence, making it a <strong>&ldquo;must-win&rdquo; bastion</strong> for state-level political heavyweights.</p>
+              <h3 id="overview-local" class="subheading">Local Significance</h3>
+              <p>The constituency hosts some of Chennai&rsquo;s most iconic landmarks, including the <strong>M. A. Chidambaram Cricket Stadium (Chepauk Stadium)</strong>, the historic <strong>Arulmigu Parthasarathy Temple</strong>, and the Indo-Saracenic <strong>Chepauk Palace</strong> and <strong>University of Madras</strong> buildings. The <strong>Marina Beach</strong> promenade, alongside the bustling markets of <strong>Triplicane, Chintadripet and Pudupet</strong>, defines its social pulse. Politically, credibility is judged by a candidate&rsquo;s ability to maintain urban amenities amid <strong>extreme residential density</strong>, balancing the interests of elite enclaves with those of working-class labour colonies.</p>
+              <h3 id="overview-admin" class="subheading">Administration</h3>
+              <p>Chepauk-Thiruvallikeni is administered entirely under the <strong>Greater Chennai Corporation</strong>, spread across <strong>Royapuram Zone 5</strong> and <strong>Teynampet Zone 9</strong>. It houses the <strong>Omandurar Government Estate</strong>, which includes the Government Multi-Super Speciality Hospital and formerly hosted the State Assembly–Secretariat complex. Unlike rural seats, its administration is <strong>purely municipal</strong>, focused on dense ward-level service delivery. Key civic concerns include the <strong>Cooum River restoration</strong>, <strong>Buckingham Canal eco-restoration</strong>, and the management of <strong>high-traffic MRTS and Metro corridors</strong> that cut through the constituency.</p>
+              <h3 id="overview-caste" class="subheading">Caste &amp; Demographic Dynamics</h3>
+              <p>The caste and demographic dynamics of Chepauk-Thiruvallikeni form one of Tamil Nadu&rsquo;s most concentrated <strong>&ldquo;Secular Progressive&rdquo; urban strongholds</strong>. A powerful <strong>Muslim minority (22–25%)</strong>, concentrated in Triplicane and Chepauk, acts as the <strong>most disciplined and decisive voting bloc</strong>. This is bolstered by <strong>Adi Dravidars (SC) (15–18%)</strong> in Chintadripet and coastal settlements who form the foundational labour workforce and a robust <strong>electoral floor for the DMK-led alliance</strong>. <strong>Vanniyars (12–15%)</strong> and <strong>Senguntha Mudaliyars (10–12%)</strong> dominate sections of the trading and retail economy, while <strong>Brahmin and upper-caste segments (6–8%)</strong> near the Parthasarathy Temple and a <strong>Christian minority (4–6%)</strong> act as critical swing/support buffers. Electoral contests are thus driven by <strong>minority security and market-driven governance</strong> rather than rigid caste polarisation.</p>
+              <h3 id="overview-occupations" class="subheading">Major Occupations</h3>
+              <p>The constituency&rsquo;s economy is <strong>exclusively service- and trade-driven</strong>. <strong>Chintadripet</strong> is a major hub for the seafood and fish trade, while <strong>Pudupet</strong> serves as Chennai&rsquo;s primary centre for automotive spare parts. Chepauk-Thiruvallikeni is also a <strong>healthcare hub</strong>, anchored by flagship government institutions like the <strong>Rajiv Gandhi Government General Hospital</strong> and multiple specialty facilities in and around the Omandurar Estate. Retail, hospitality and informal commerce around <strong>Chepauk Stadium</strong> and the <strong>Marina Beach</strong> sustain a massive workforce, and a large share of residents are employed in nearby government offices and the educational institutions of the <strong>University of Madras</strong>.</p>
+              <h3 id="overview-dynamics" class="subheading">Political Dynamics</h3>
+              <p>The political history of Chepauk-Thiruvallikeni is rooted in its status as a <strong>&ldquo;DMK Fortress&rdquo;</strong>. The pre-delimitation Chepauk seat was immortalised by <strong>M. Karunanidhi&rsquo;s three consecutive victories</strong>, and the unified post-2008 constituency has remained a <strong>VVIP DMK bastion</strong> since 2011. The DMK has repeatedly leveraged its <strong>Muslim–Dalit core</strong> in Triplicane and Chintadripet to withstand state-wide anti-incumbency waves. While the AIADMK occasionally breached the older Thiruvallikeni segment (notably through leaders like <strong>Mohammad Asif</strong> in 1991 and <strong>Bader Sayeed</strong> in 2006), DMK hegemony has only deepened after unification. This dominance peaked in <strong>2021</strong>, when <strong>Udhayanidhi Stalin</strong> won with a historic <strong>68.92% vote share</strong>, transforming the seat from a traditional stronghold into the <strong>symbolic centre of the DMK&rsquo;s current leadership and succession narrative</strong>.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. Assembly Snapshot -->
+        <section id="snapshot" class="mb-5 section-reveal">
+          <h2 class="section-title"><i class="fas fa-table-list me-2"></i>2. Assembly Snapshot</h2>
+          <div class="card">
+            <div class="card-body p-0">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr><th>Category</th><th>Details</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><strong>Rural : Urban Ratio</strong></td><td>0% Rural : 100% Urban</td></tr>
+                  <tr><td><strong>Total Electors (2026 Est.)</strong></td><td>1,63,866</td></tr>
+                  <tr><td><strong>Total Polling Booths</strong></td><td>235</td></tr>
+                  <tr><td><strong>Male Voters</strong></td><td>79,412</td></tr>
+                  <tr><td><strong>Female Voters</strong></td><td>84,396</td></tr>
+                  <tr><td><strong>Third Gender Voters</strong></td><td>58</td></tr>
+                  <tr><td><strong>Number of Wards</strong></td><td>16 GCC Wards (79, 81–93, 95 &amp; 111)</td></tr>
+                  <tr><td><strong>Municipality / Corporation</strong></td><td>Greater Chennai Corporation (GCC)</td></tr>
+                  <tr><td><strong>Administrative Zones</strong></td><td>Royapuram (Zone 5) and Teynampet (Zone 9)</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body border-top">
+              <h3 class="subheading mb-3">Voter Demographics</h3>
+              <div class="row g-3 justify-content-center voter-demos-charts mx-auto" style="max-width:960px;">
+                <div class="col-md-6">
+                  <div class="chart-container" style="height:220px;"><canvas id="chartGender"></canvas></div>
+                  <div class="chart-legend d-flex flex-wrap justify-content-center align-items-center gap-3 mt-2">
+                    <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#0ea5e9;"></span><span class="small">Male (79,412)</span></span>
+                    <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#ec4899;"></span><span class="small">Female (84,396)</span></span>
+                    <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#8b5cf6;"></span><span class="small">Third Gender (58)</span></span>
+                  </div>
+                  <p class="small text-muted mb-0 text-center mt-1">Gender split</p>
+                </div>
+                <div class="col-md-6">
+                  <div class="chart-container" style="height:220px;"><canvas id="chartRuralUrbanSnapshot"></canvas></div>
+                  <div class="chart-legend d-flex flex-wrap justify-content-center align-items-center gap-3 mt-2">
+                    <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#16a34a;"></span><span class="small">Rural 0%</span></span>
+                    <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#0ea5e9;"></span><span class="small">Urban 100%</span></span>
+                  </div>
+                  <p class="small text-muted mb-0 text-center mt-1">Rural vs Urban electorate</p>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <h3 id="snapshot-summary" class="subheading mb-2">Summary and Remarks</h3>
+              <p class="mb-2 small"><strong>Chepauk-Thiruvallikeni</strong> is an ultra-dense, <strong>100% urban</strong> battlefield located at the geographical and political centre of Chennai. With an estimated electorate of <strong>1.63 lakh voters</strong> heading into 2026, it remains one of the most compact yet high-stakes constituencies in the state. Unlike rural or semi-urban seats, the challenge here is purely logistical and service-oriented, focusing on high-rise residential management and the dense &ldquo;bachelor mansions&rdquo; of Triplicane.</p>
+              <p class="mb-0 small">The constituency maintains a consistent <strong>female majority</strong> (roughly 5,000 more women than men), which has become a focal point for the DMK’s localized welfare outreach. The polling infrastructure is concentrated within schools and government buildings across its <strong>16 corporation wards</strong>, with a high density of booths per square kilometer. As a legacy seat of the DMK leadership, the discourse for 2026 is centered on <strong>urban renewal</strong>, the restoration of the <strong>Cooum riverfront</strong>, and the sustainability of the historic <strong>Triplicane trade ecosystem</strong>.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. Previous Election Results -->
+        <section id="results" class="mb-5 section-reveal">
+          <h2 class="section-title"><i class="fas fa-poll me-2"></i>3. Previous Election Results</h2>
+        
+          <div class="row g-3 mb-4">
+            <div class="col-md-12">
+              <div class="card border-success">
+                <div class="card-header bg-success text-white">2021 — Rise of the “Crown Prince”</div>
+                <div class="card-body p-0">
+                  <table class="table table-sm mb-0">
+                    <thead><tr><th>Party</th><th>Candidate</th><th>Votes</th><th>%</th></tr></thead>
+                    <tbody>
+                      <tr class="table-danger"><td>DMK</td><td>Udhayanidhi Stalin</td><td>93,285</td><td>68.92%</td></tr>
+                      <tr><td>PMK</td><td>Kassali A.V.A</td><td>23,930</td><td>17.68%</td></tr>
+                      <tr><td>NTK</td><td>Jayasimmaraja S M</td><td>9,193</td><td>6.79%</td></tr>
+                      <tr><td>IJK</td><td>Mohammed Idris K</td><td>4,096</td><td>3.03%</td></tr>
+                      <tr><td>AMMK</td><td>Rajendran L</td><td>1,873</td><td>1.38%</td></tr>
+                      <tr><td>NOTA</td><td>None of the Above</td><td>2,061</td><td>1.52%</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card-footer small">
+                  <strong>Margin:</strong> 69,355 (DMK over PMK).<br>
+                  <span class="text-muted"><strong>Summary 2021:</strong> Udhayanidhi Stalin made his debut with a <strong>landslide 68.92% vote share</strong>, defeating the PMK candidate (in AIADMK alliance) by <strong>69,355 votes</strong>. The result reaffirmed Chepauk‑Thiruvallikeni as the <strong>safest seat for the DMK’s first family</strong>, with strong consolidation of Muslim and Dalit vote banks and limited impact from smaller parties like NTK and IJK.</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">2016 — The Anbazhagan Hegemony</div>
+                <div class="card-body p-0">
+                  <table class="table table-sm mb-0">
+                    <thead><tr><th>Party</th><th>Candidate</th><th>Votes</th><th>%</th></tr></thead>
+                    <tbody>
+                      <tr class="table-danger"><td>DMK</td><td>J. Anbazhagan</td><td>67,982</td><td>48.50%</td></tr>
+                      <tr><td>AIADMK</td><td>A. Noorjahan</td><td>53,818</td><td>38.40%</td></tr>
+                      <tr><td>BJP</td><td>Apn. Thamarai Gajendran</td><td>6,281</td><td>4.48%</td></tr>
+                      <tr><td>DMDK</td><td>V. Abdulla Sait</td><td>5,507</td><td>3.93%</td></tr>
+                      <tr><td>PMK</td><td>A.V.A. Kassali</td><td>2,511</td><td>1.79%</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card-footer small">
+                  <strong>Margin:</strong> 14,164 (DMK over AIADMK).<br>
+                  <span class="text-muted"><strong>Summary 2016:</strong> In the middle of the <strong>&ldquo;Jayalalithaa Wave&rdquo;</strong>, J. Anbazhagan retained Chepauk‑Thiruvallikeni for the DMK with a comfortable margin over AIADMK’s A. Noorjahan. The constituency’s urban minority profile and DMK’s strong ward‑level network in Triplicane and Chintadripet blunted the state‑wide trend, while vote splits between DMDK and PMK weakened the opposition challenge.</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <div class="card border-primary">
+                <div class="card-header bg-primary text-white">2011 — Survival Against the Minority Surge</div>
+                <div class="card-body p-0">
+                  <table class="table table-sm mb-0">
+                    <thead><tr><th>Party</th><th>Candidate</th><th>Votes</th><th>%</th></tr></thead>
+                    <tbody>
+                      <tr class="table-danger"><td>DMK</td><td>J. Anbazhagan</td><td>64,175</td><td>49.43%</td></tr>
+                      <tr><td>MMK (AIADMK Alliance)</td><td>M. Thameemun Ansari</td><td>54,972</td><td>42.34%</td></tr>
+                      <tr><td>BJP</td><td>S. Venkataraman</td><td>5,290</td><td>4.07%</td></tr>
+                      <tr><td>INL</td><td>J. Abdul Rahim</td><td>1,293</td><td>1.00%</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card-footer small">
+                  <strong>Margin:</strong> 9,203 (DMK over MMK).</strong><br>
+                  <span class="text-muted"><strong>Summary 2011:</strong> In the midst of a <strong>massive anti‑incumbency wave</strong> against the DMK across Tamil Nadu, J. Anbazhagan narrowly held on against MMK’s M. Thameemun Ansari (backed by AIADMK), who attempted to capitalise on the constituency’s <strong>~25% Muslim population</strong>. The victory underscored the enduring power of <strong>M. Karunanidhi’s legacy</strong> in Chepauk and the DMK’s deep organisational roots in Triplicane’s minority‑Dalit clusters.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card mb-4">
+            <div class="card-header">Vote Share Trend (2011 &rarr; 2016 &rarr; 2021)</div>
+            <div class="card-body">
+              <div class="chart-container" style="height:280px;"><canvas id="chartVoteShareTrend"></canvas></div>
+              <div class="chart-legend d-flex flex-wrap justify-content-center align-items-center gap-3 mt-2">
+                <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#b91c1c;"></span><span class="small">DMK</span></span>
+                <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#22c55e;"></span><span class="small">PMK / MMK / AIADMK Alliance</span></span>
+                <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#1e3a8a;"></span><span class="small">NTK / Others</span></span>
+              </div>
+            </div>
+          </div>
+          <!-- Form 20 -->
+          <section id="form20" class="mb-5 section-reveal">
+            <h2 class="section-title"><i class="fas fa-table-cells me-2"></i>Form 20 Analysis</h2>
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="card-header">Booth Classification</div>
+                  <div class="card-body p-0">
+                    <table class="table mb-0">
+                      <thead class="table-light"><tr><th>Category</th><th>Criteria</th><th class="text-end">Count</th><th class="text-end">%</th></tr></thead>
+                      <tbody>
+                        <tr><td>DMK Stronghold</td><td>&gt; 20%</td><td class="text-end">313</td><td class="text-end">90.5%</td></tr>
+                        <tr><td>DMK Favorable</td><td>5–20%</td><td class="text-end">11</td><td class="text-end">3.2%</td></tr>
+                        <tr><td>Battleground</td><td>&lt; 5%</td><td class="text-end">5</td><td class="text-end">1.4%</td></tr>
+                        <tr><td>PMK Favorable</td><td>5–20%</td><td class="text-end">7</td><td class="text-end">2.0%</td></tr>
+                        <tr><td>PMK Stronghold</td><td>&gt; 20%</td><td class="text-end">10</td><td class="text-end">2.9%</td></tr>
+                        <tr class="fw-bold"><td>Total</td><td>—</td><td class="text-end">346</td><td class="text-end">100%</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="card-header">Booths by Category</div>
+                  <div class="card-body">
+                    <div id="boothGrid"></div>
+                    <div id="boothTooltip" class="booth-tooltip" aria-hidden="true">Booth 1</div>
+                    <div class="d-flex flex-wrap gap-3 align-items-center" style="font-size:12px;color:#4B5563;">
+                      <span class="d-flex align-items-center gap-1"><span style="width:12px;height:12px;border-radius:3px;background:#b91c1c;display:inline-block;"></span> Udhayanidhi Stalin DMK Stronghold (313)</span>
+                      <span class="d-flex align-items-center gap-1"><span style="width:12px;height:12px;border-radius:3px;background:#dc2626;display:inline-block;"></span> Udhayanidhi Stalin DMK Favorable (11)</span>
+                      <span class="d-flex align-items-center gap-1"><span style="width:12px;height:12px;border-radius:3px;background:#EAB308;display:inline-block;"></span> Battleground (5)</span>
+                      <span class="d-flex align-items-center gap-1"><span style="width:12px;height:12px;border-radius:3px;background:#22c55e;display:inline-block;"></span> Kassali A.V.A PMK Favorable (7)</span>
+                      <span class="d-flex align-items-center gap-1"><span style="width:12px;height:12px;border-radius:3px;background:#166534;display:inline-block;"></span> Kassali A.V.A PMK Stronghold (10)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+          <div class="electoral-behavior-section">
+            <h3 class="electoral-behavior-title mb-4"><i class="fas fa-vote-yea me-2"></i>Electoral Behavior</h3>
+            <div class="row g-4">
+              <div class="col-lg-6">
+                <div class="card h-100 border-0 shadow-sm electoral-behavior-card" style="border-left:4px solid #b91c1c !important;">
+                  <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                      <div class="electoral-behavior-icon rounded-3 d-flex align-items-center justify-content-center" style="background:linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color:#b91c1c; width:48px; height:48px;">
+                        <i class="fas fa-handshake"></i>
+                      </div>
+                      <h4 class="h6 fw-800 mb-0 text-dark">From Survival to Dominance</h4>
+                    </div>
+                    <p class="text-body mb-0 lh-lg">Over the last three elections, Chepauk‑Thiruvallikeni has evolved from a <strong>&ldquo;survival seat&rdquo;</strong> for the DMK during adverse cycles (2011) into a near <strong>&ldquo;permanent ideological fortress&rdquo;</strong>. In 2011, voters defied a state‑wide anti‑DMK landslide to keep the party afloat with nearly 50% vote share. By 2016 and especially 2021, this behaviour shifted into <strong>&ldquo;total dominance&rdquo;</strong>, as the constituency consistently resisted broader anti‑incumbency trends sweeping Tamil Nadu.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="card h-100 border-0 shadow-sm electoral-behavior-card" style="border-left:4px solid #0ea5e9 !important;">
+                  <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                      <div class="electoral-behavior-icon rounded-3 d-flex align-items-center justify-content-center" style="background:linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); color:#0ea5e9; width:48px; height:48px;">
+                        <i class="fas fa-city"></i>
+                      </div>
+                      <h4 class="h6 fw-800 mb-0 text-dark">VVIP Mandate &amp; Youth Disruption</h4>
+                    </div>
+                    <p class="text-body mb-0 lh-lg">By 2021, Chepauk‑Thiruvallikeni had become a <strong>&ldquo;VVIP Mandate&rdquo;</strong> seat, where voters rewarded Udhayanidhi Stalin with a record‑breaking <strong>68.92%</strong> vote share, signalling their preference for being represented by a <strong>&ldquo;centre of power&rdquo;</strong> to maximise urban development dividends. At the same time, the steady rise of <strong>NTK</strong> and now <strong>TVK</strong> reflects a growing, though still limited, <strong>youth‑driven search for alternatives</strong>. This has shrunk the traditional AIADMK‑led opposition base from above 40% in 2011 to under 20% by 2021, even as a small but persistent &ldquo;Tamil nationalist&rdquo; vote consolidates outside the Dravidian camps.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+
+        <!-- 4. Caste Composition -->
+        <section id="caste" class="mb-5 section-reveal">
+          <h2 class="section-title"><i class="fas fa-people-group me-2"></i>4. Caste Composition</h2>
+          <div class="row g-3 mb-4">
+            <div class="col-lg-12">
+              <div class="card h-100">
+                <div class="card-header">Population Share by Community (%)</div>
+                <div class="card-body">
+                  <div class="chart-container" style="height:260px;"><canvas id="chartCaste"></canvas></div>
+                  <div class="chart-legend d-flex flex-wrap justify-content-center align-items-center gap-2 gap-md-3 mt-2">
+                    <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#16a34a;"></span><span class="small">Muslim (Minority)</span></span>
+                    <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#7c3aed;"></span><span class="small">Adi Dravidar (SC)</span></span>
+                    <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#f97316;"></span><span class="small">Vanniyar (MBC)</span></span>
+                    <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#0ea5e9;"></span><span class="small">Senguntha Mudaliyar</span></span>
+                    <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#eab308;"></span><span class="small">Brahmin &amp; Upper Caste</span></span>
+                    <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#64748b;"></span><span class="small">Christian (Minority)</span></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-12">
+              <div class="card h-100">
+                <div class="card-body p-0">
+                  <table class="table mb-0">
+                    <thead class="table-light"><tr><th>Caste / Group Name</th><th>Population %</th><th>Political Inclination &amp; Role</th></tr></thead>
+                    <tbody>
+                      <tr><td>Muslim (Minority)</td><td>22% – 25%</td><td>The most decisive voting block, concentrated in Triplicane and Chepauk. They vote as a highly disciplined unit and form the <strong>bedrock of the DMK’s secular fortress</strong>, prioritising minority rights and protection against national‑level communal policies.</td></tr>
+                      <tr><td>Adi Dravidar (SC)</td><td>15% – 18%</td><td>Primarily Adi Dravidars in Chintadripet and coastal settlements. They constitute the core labour workforce and act as the <strong>foundational bloc</strong> of the DMK‑led Secular Progressive Alliance (SPA).</td></tr>
+                      <tr><td>Vanniyar (MBC)</td><td>12% – 15%</td><td>Scattered across high‑density wards. Although a key demographic for PMK/AIADMK elsewhere, in Chepauk‑Thiruvallikeni the urban Vanniyar vote is <strong>fragmented</strong> and more influenced by economic stability and infrastructure than by pure caste mobilisation.</td></tr>
+                      <tr><td>Senguntha Mudaliyar</td><td>10% – 12%</td><td>Prominent in the urban trade and textile retail sectors, especially in Pudupet and Chintadripet. They act as <strong>&ldquo;kingmakers&rdquo;</strong> in market wards and generally favour the ruling front that guarantees business continuity and minimal disruption.</td></tr>
+                      <tr><td>Brahmin &amp; Upper Caste</td><td>6% – 8%</td><td>Concentrated around the Parthasarathy Temple in Triplicane. Historically AIADMK‑leaning, they now function as a <strong>swing or NOTA‑prone segment</strong>, sensitive to taxation, congestion and cultural‑heritage concerns.</td></tr>
+                      <tr><td>Christian (Minority)</td><td>4% – 6%</td><td>Mostly employed in healthcare, education and administration. They tend to align with the Muslim community in backing the DMK‑led alliance to safeguard minority rights and institutional security.</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <h3 class="subheading">Dominant Communities</h3>
+              <p class="small mb-2">The <strong>Muslim community (22–25%)</strong> forms the undisputed political backbone of Chepauk‑Thiruvallikeni, especially in Triplicane. Their overwhelming support for the DMK since the era of M. Karunanidhi has made the seat <strong>almost impregnable for the opposition</strong>. The <strong>Adi Dravidar workforce (15–18%)</strong> in Chintadripet and coastal hamlets reinforces this base, ensuring a solid floor for the DMK‑led alliance that competitors must overcome before even becoming competitive.</p>
+              <h3 class="subheading">Swing Communities</h3>
+              <p class="small mb-0">The <strong>Senguntha Mudaliyar traders</strong> and the <strong>urban youth</strong> act as the core swing forces for 2026. Mudaliyar business families in Chintadripet and Pudupet prioritise <strong>&ldquo;ease of doing business&rdquo;</strong>, Cooum‑related relocation concerns and infrastructure reliability, signalling early cracks if they drift away from the DMK. Simultaneously, the rapid rise of <strong>TVK (Vijay)</strong> among first‑time voters across Vanniyar and Dalit households is a key variable, as even a modest youth shift towards TVK could dent DMK margins in an otherwise structurally favourable constituency.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. Block Names -->
+        <section id="blocks" class="mb-5 section-reveal">
+          <h2 class="section-title"><i class="fas fa-map me-2"></i>5. Block Names &amp; Categorization</h2>
+          <div class="blocks-table-wrap">
+            <table class="table blocks-table" id="blocksTable">
+              <thead>
+                <tr><th>Neighborhood / Area</th><th>Key Traits</th><th>Strong Party</th><th>Remarks</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="block-name">Triplicane (Urban Core)</td>
+                  <td>Historic &ldquo;Old Town&rdquo; with a high density of Tamil Muslims and Brahmins; home to the Parthasarathy Temple, the Big Mosque and numerous bachelor mansions.</td>
+                  <td class="strong-party">DMK (Stronghold)</td>
+                  <td>The backbone of DMK support due to legacy ties and minority consolidation. TVK (Vijay) is very active here, targeting the large floating population of students and young professionals.</td>
+                </tr>
+                <tr>
+                  <td class="block-name">Chepauk &amp; Marina Belt</td>
+                  <td>State&rsquo;s administrative nerve centre, featuring Chepauk Stadium, University of Madras and coastal settlements dominated by fisherfolk and government employees.</td>
+                  <td class="strong-party">DMK / AIADMK (Competitive)</td>
+                  <td>While DMK holds the edge overall, AIADMK maintains a traditional base in fishing hamlets. NTK has visibility by highlighting sea‑erosion and fisherfolk livelihood issues.</td>
+                </tr>
+                <tr>
+                  <td class="block-name">Chintadripet &amp; Pudupet</td>
+                  <td>Commercial hubs for the fish trade and automotive spare parts; high concentration of Scheduled Castes and working‑class labour.</td>
+                  <td class="strong-party">DMK (Solid)</td>
+                  <td>The &ldquo;engine room&rdquo; for DMK mobilisation. Grassroots cadre strength is highest here, though Cooum riverfront relocation and market‑displacement fears are emerging swing factors for 2026.</td>
+                </tr>
+                <tr>
+                  <td class="block-name">Omandurar &amp; Government Estate</td>
+                  <td>Modern institutional zone with multi‑specialty hospitals and government housing; focus on urban infrastructure and healthcare‑linked transit.</td>
+                  <td class="strong-party">DMK (Incumbent Lead)</td>
+                  <td>Dominated by state government workers and transient populations. Functions as a bellwether for how the urban middle class perceives the &ldquo;Stalin–Udhayanidhi&rdquo; administration&rsquo;s performance.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 6. Political Parties -->
+        <section id="parties" class="mb-5 section-reveal">
+          <h2 class="section-title"><i class="fas fa-handshake me-2"></i>6. Major Political Parties – Current Status</h2>
+          <p class="parties-subtitle">Party / Alliance · Current Status, Political Developments &amp; Internal Disputes</p>
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="card party-card border-danger h-100">
+                <div class="card-header bg-danger text-white fw-800">DMK – VCK Alliance (SPA)</div>
+                <div class="card-body">
+                  <div class="party-block">
+                    <div class="party-label">Status</div>
+                    <p class="mb-0">Seat held by <strong>Deputy Chief Minister Udhayanidhi Stalin</strong>. Chepauk‑Thiruvallikeni is the DMK’s <strong>&ldquo;Legacy Fortress&rdquo;</strong> and premier VVIP urban segment, central to the party&rsquo;s succession and leadership narrative.</p>
+                  </div>
+                  <div class="party-block">
+                    <div class="party-label">Current Activities</div>
+                    <p class="mb-0">Running <strong>&ldquo;Mansion‑Connect&rdquo;</strong> programmes in Triplicane, pushing <strong>in‑situ resettlement</strong> assurances for Buckingham Canal and Cooum‑side residents, and showcasing <strong>Chennai 2.0</strong> projects such as Omandurar Hospital upgrades and urban‑sport infrastructure near Chepauk Stadium.</p>
+                  </div>
+                  <div class="party-block">
+                    <div class="party-label">Disputes</div>
+                    <p class="mb-0">Tensions between the <strong>&ldquo;Old Guard&rdquo;</strong> of Triplicane cadres and newly empowered youth‑wing appointees. Some long‑serving functionaries feel sidelined by the highly centralised management style of the Deputy CM’s office.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card party-card border-warning h-100">
+                <div class="card-header bg-warning text-dark fw-800">AIADMK – PMK – AMMK Alliance</div>
+                <div class="card-body">
+                  <div class="party-block">
+                    <div class="party-label">Status</div>
+                    <p class="mb-0">In <strong>&ldquo;Reclamation Mode&rdquo;</strong> after the January 2026 consolidation. The alliance targets urban Vanniyar pockets, fisherfolk and disaffected minorities by portraying DMK’s infra projects as <strong>&ldquo;elitist&rdquo;</strong> and anti‑poor.</p>
+                  </div>
+                  <div class="party-block">
+                    <div class="party-label">Current Activities</div>
+                    <p class="mb-0">Organising <strong>&ldquo;Water‑Log&rdquo; protests</strong>, highlighting delays in Cooum/Buckingham restoration and campaigning against <strong>street‑vendor and spare‑parts trader displacement</strong> in Pudupet and Chintadripet.</p>
+                  </div>
+                  <div class="party-block">
+                    <div class="party-label">Disputes</div>
+                    <p class="mb-0">Seat‑sharing friction, with the <strong>PMK (Anbumani faction)</strong> demanding greater prominence in high‑MBC wards and clashing with local AIADMK functionaries over campaign control.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card party-card border-success h-100">
+                <div class="card-header text-white fw-800" style="background:#15803d;">TVK (Tamilaga Vettri Kazhagam – Vijay)</div>
+                <div class="card-body">
+                  <div class="party-block">
+                    <div class="party-label">Status</div>
+                    <p class="mb-0">Positioned as the <strong>&ldquo;Triplicane Disruptor&rdquo;</strong>. After a massive February 2026 membership drive, TVK has entrenched itself inside Triplicane&rsquo;s mansion ecosystem and among first‑time voters.</p>
+                  </div>
+                  <div class="party-block">
+                    <div class="party-label">Current Activities</div>
+                    <p class="mb-0">Hosting <strong>&ldquo;Youth Vision Summits&rdquo;</strong> in Chintadripet, distributing sports kits, and running a <strong>digital grievance cell</strong> for mansion dwellers to report water, drainage and safety issues in narrow lanes.</p>
+                  </div>
+                  <div class="party-block">
+                    <div class="party-label">Developments</div>
+                    <p class="mb-0">Branding itself as the only credible challenger to &ldquo;Stalin family rule,&rdquo; focusing on <strong>cost of living, housing stress and corruption‑free governance</strong> to attract aspirational youth across communities.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card party-card border-primary h-100">
+                <div class="card-header bg-primary text-white fw-800">NTK (Naam Tamilar Katchi – Seeman)</div>
+                <div class="card-body">
+                  <div class="party-block">
+                    <div class="party-label">Status</div>
+                    <p class="mb-0">Solo contestant with a <strong>steady urban nationalist base</strong>, particularly among fisherfolk along Marina and indigenous labour in the fish markets.</p>
+                  </div>
+                  <div class="party-block">
+                    <div class="party-label">Current Activities</div>
+                    <p class="mb-0">Leading <strong>&ldquo;Save Marina&rdquo;</strong> marches, protesting coastal‑resident relocation and challenging the <strong>privatisation of public spaces</strong> near Chepauk Stadium (legal actions as of Jan 2026).</p>
+                  </div>
+                  <div class="party-block">
+                    <div class="party-label">Developments</div>
+                    <p class="mb-0">Campaigning on a <strong>&ldquo;Local First&rdquo;</strong> platform, promising to defend Pudupet auto‑spares heritage and Chintadripet fish trade from being displaced by malls and high‑end real estate, but facing competition from TVK in the same anti‑establishment youth space.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. Current Political Dynamics -->
+        <section id="dynamics" class="mb-5 section-reveal">
+          <h2 class="section-title"><i class="fas fa-bullseye me-2"></i>7. Current Political Dynamics</h2>
+          <div class="card dynamics-block border-0 shadow-sm">
+            <div class="card-body p-4">
+              <p class="fs-6 lh-lg text-dark mb-4">As 2026 approaches, Chepauk‑Thiruvallikeni is being projected as a <strong>&ldquo;Model VVIP Segment&rdquo;</strong> under Deputy Chief Minister <strong>Udhayanidhi Stalin</strong>, combining high‑visibility projects with persistent urban friction. The DMK highlights flagship works such as the <strong>₹8.13‑crore pumping station with odour control</strong>, Cooum‑side sewage interceptions and the extension of the <strong>Chief Minister’s Breakfast Scheme</strong> to consolidate support among the 50,000+ working‑class families across Triplicane and Chintadripet. At the same time, the opposition weaponises complaints over <strong>stagnant river cleaning</strong>, traffic gridlock on corridors like Pycrofts Road and the anxiety around canal‑side resettlement.</p>
+              <p class="fs-6 lh-lg text-dark mb-0">A second axis of contestation is the <strong>&ldquo;Youth Disruption&rdquo;</strong> created by Vijay’s <strong>TVK</strong>, which has rapidly gained traction inside Triplicane mansions and Dalit–minority tenements. TVK pitches itself as a <strong>corruption‑free, new‑age alternative</strong>, pushing DMK to defend its <strong>68.9% vote‑share floor</strong> through aggressive booth‑level mobilisation. With a reunited <strong>AIADMK–PMK–BJP alliance</strong> on one side and TVK/NTK nibbling at the protest vote on the other, Chepauk‑Thiruvallikeni’s 2026 battle is no longer a simple coronation; it is a test of whether <strong>&ldquo;Brand Udhayanidhi&rdquo;</strong> can withstand a multi‑cornered, high‑intensity urban challenge.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 8. Key Issues -->
+        <section id="issues" class="mb-5 section-reveal">
+          <h2 class="section-title"><i class="fas fa-exclamation-circle me-2"></i>8. Key Issues and Demands</h2>
+          <div class="accordion" id="accordionIssues">
+            <div class="accordion-item">
+              <h3 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#iss1" data-issue-num="1">Slum Redevelopment &amp; Housing Rights</button></h3>
+              <div id="iss1" class="accordion-collapse collapse show" data-bs-parent="#accordionIssues"><div class="accordion-body">Chepauk‑Thiruvallikeni contains some of Chennai’s oldest and most crowded TNHB tenements in <strong>Lock Nagar, Mattankuppam and Ayothia Kuppam</strong>. Residents fear that &ldquo;redevelopment&rdquo; will mean eviction to distant outskirts like Perumbakkam, severing coastal livelihoods and social networks. They demand <strong>on‑site (in‑situ) redevelopment</strong> of all 30+ year‑old blocks, legal <strong>&ldquo;Right to Stay&rdquo;</strong> guarantees, and modern amenities without being pushed out of their ancestral neighbourhoods.<br><strong>Impact on Votes:</strong> Very High &mdash; primary driver for lower‑income and labour‑class voters who form the constituency’s booth‑level backbone.</div></div>
+            </div>
+            <div class="accordion-item">
+              <h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#iss2" data-issue-num="2">Water Quality &amp; Sea Water Intrusion</button></h3>
+              <div id="iss2" class="accordion-collapse collapse" data-bs-parent="#accordionIssues"><div class="accordion-body">Interior pockets of <strong>Triplicane and Chepauk</strong> suffer from poor drinking‑water quality due to indiscriminate groundwater extraction and <strong>sea‑water intrusion</strong>, turning borewells saline. In wards like 114 and 115, frequent complaints of <strong>sewage mixing with Metro water</strong>, especially during monsoon, have triggered street‑level protests. Residents demand a <strong>complete pipeline overhaul</strong> and expansion of TTRO/RO capacity to restore safe domestic supply.<br><strong>Impact on Votes:</strong> High &mdash; a core quality‑of‑life issue for over <strong>60,000 families</strong> living in narrow lanes where tanker access is limited.</div></div>
+            </div>
+            <div class="accordion-item">
+              <h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#iss3" data-issue-num="3">Buckingham Canal Restoration &amp; Encroachment Conflict</button></h3>
+              <div id="iss3" class="accordion-collapse collapse" data-bs-parent="#accordionIssues"><div class="accordion-body">The <strong>Buckingham Canal</strong> cutting through the constituency remains a major source of foul odour, mosquito menace and stagnant sewage. Large‑scale eco‑restoration is proposed but is stalled by funding gaps and complex <strong>MRTS‑side encroachments</strong>. Locals demand <strong>de‑silting, bio‑fencing, closure of 200+ illegal inlets</strong> and the conversion of canal banks into safe, well‑lit pedestrian walkways so that the canal becomes a flood‑mitigating asset instead of a health hazard.<br><strong>Impact on Votes:</strong> Moderate–High &mdash; strongly influences health and sanitation perceptions along the canal’s 4 km stretch.</div></div>
+            </div>
+            <div class="accordion-item">
+              <h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#iss4" data-issue-num="4">Parking Crisis &amp; Traffic Bottlenecks</button></h3>
+              <div id="iss4" class="accordion-collapse collapse" data-bs-parent="#accordionIssues"><div class="accordion-body">The narrow, historic lanes of <strong>Triplicane</strong> around the <strong>Parthasarathy Temple</strong> and Pycrofts Road face near‑permanent gridlock due to on‑street parking, pilgrim inflow and informal commerce. Even emergency vehicles often struggle to pass. Residents and traders demand <strong>multi‑level car parking (MLCP) facilities</strong>, strict no‑parking enforcement on arterial stretches, and pedestrianisation of select temple‑heritage corridors.<br><strong>Impact on Votes:</strong> Moderate &mdash; key concern for urban middle‑class households, traders and thousands of daily pilgrims.</div></div>
+            </div>
+            <div class="accordion-item">
+              <h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#iss5" data-issue-num="5">Heritage Preservation vs. Commercial Growth</button></h3>
+              <div id="iss5" class="accordion-collapse collapse" data-bs-parent="#accordionIssues"><div class="accordion-body">Historic structures like <strong>Chepauk Palace</strong>, Indo‑Saracenic buildings of the <strong>University of Madras</strong> and colonial facades along Mount Road, plus markets at <strong>Ritchie Street and Pycrofts Road</strong>, face neglect or unplanned commercial pressure. Traders want upgraded infrastructure and fire‑safety without losing heritage character, while younger entrepreneurs demand modernised markets that can compete with e‑commerce. There is a strong push for a <strong>&ldquo;Heritage Trade Corridor&rdquo;</strong> that couples conservation with tax incentives and safety upgrades.<br><strong>Impact on Votes:</strong> Low–Moderate &mdash; influential among merchants, heritage activists and professional classes, and symbolically important for Chennai’s cultural identity.</div></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 9. SWOT -->
+        <section id="swot" class="mb-5 swot-section section-reveal">
+          <h2 class="section-title"><i class="fas fa-brain me-2"></i>9. SWOT Analysis — Chepauk-Thiruvallikeni</h2>
+          <p class="text-muted mb-4" style="font-size: 14px; max-width: 720px;">Party-wise Strengths, Weaknesses, Opportunities and Threats for the Chepauk‑Thiruvallikeni Assembly segment.</p>
+          <div class="row g-4">
+            <div class="col-md-12 col-lg-12">
+              <div class="card h-100">
+                <div class="card-header bg-danger text-white">DMK – VCK Alliance (Secular Progressive Alliance — SPA)</div>
+                <div class="swot-body">
+                  <div class="swot-item swot-s">
+                    <span class="swot-icon"><i class="fas fa-check-circle"></i></span>
+                    <div class="swot-text"><span class="swot-label">Strengths</span> Backed by the immense political stature of <strong>Deputy CM Udhayanidhi Stalin</strong> and the ideological legacy of M. Karunanidhi’s three historic wins in Chepauk. High‑visibility &ldquo;Chennai 2.0&rdquo; projects, heritage restoration and world‑class sports infrastructure around Chepauk Stadium, coupled with <strong>Magalir Urimai Thogai</strong> and breakfast schemes, have created a loyalist base among <strong>1.22 lakh+ female electors</strong>.</div>
+                  </div>
+                  <div class="swot-item swot-w">
+                    <span class="swot-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                    <div class="swot-text"><span class="swot-label">Weaknesses</span> Exposure to severe <strong>anti‑incumbency</strong> in Cooum and Buckingham Canal resettlement areas, impacting thousands of families in Chintadripet and coastal hamlets. Internal friction between <strong>Triplicane&rsquo;s &ldquo;Old Guard&rdquo;</strong> cadres and centralised management through the Minister’s office has caused localised cadre demotivation.</div>
+                  </div>
+                  <div class="swot-item swot-o">
+                    <span class="swot-icon"><i class="fas fa-lightbulb"></i></span>
+                    <div class="swot-text"><span class="swot-label">Opportunities</span> Further consolidating the <strong>25% Muslim block</strong> as a bulwark against national‑level communal narratives, and using the <strong>&ldquo;Future CM&rdquo;</strong> branding of Udhayanidhi to convince voters that retaining this seat guarantees direct access to state power and faster urban upgrades.</div>
+                  </div>
+                  <div class="swot-item swot-t">
+                    <span class="swot-icon"><i class="fas fa-shield-alt"></i></span>
+                    <div class="swot-text"><span class="swot-label">Threats</span> Concentrated attacks on the <strong>&ldquo;dynasty&rdquo;</strong> narrative and rising urban cost‑of‑living (property tax, water charges) among trader and middle‑class segments, alongside an aggressive TVK campaign vying for youth and first‑time voters.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-12 col-lg-12">
+              <div class="card h-100">
+                <div class="card-header bg-warning text-dark">AIADMK – PMK – AMMK Alliance</div>
+                <div class="swot-body">
+                  <div class="swot-item swot-s">
+                    <span class="swot-icon"><i class="fas fa-check-circle"></i></span>
+                    <div class="swot-text"><span class="swot-label">Strengths</span> The reunification of AIADMK–PMK–AMMK recreates a combined <strong>traditional vote bank</strong> that was fragmented in 2021, with historical strength in <strong>fishing hamlets and Vanniyar pockets (12–15%)</strong> where the &ldquo;Two Leaves&rdquo; symbol retains recall.</div>
+                  </div>
+                  <div class="swot-item swot-w">
+                    <span class="swot-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                    <div class="swot-text"><span class="swot-label">Weaknesses</span> Persistent difficulty breaking into the <strong>DMK’s consolidated minority–Dalit wall</strong> and the absence of a single <strong>local &ldquo;tall leader&rdquo;</strong> who can match Udhayanidhi’s visibility and resource advantage.</div>
+                  </div>
+                  <div class="swot-item swot-o">
+                    <span class="swot-icon"><i class="fas fa-lightbulb"></i></span>
+                    <div class="swot-text"><span class="swot-label">Opportunities</span> Positioning itself as the <strong>voice of the displaced</strong> by championing canal‑side and river‑fringe residents resisting eviction, and emerging as the <strong>&ldquo;protector of local trade&rdquo;</strong> for Pudupet auto‑spares and Chintadripet fish markets against aggressive corporatisation.</div>
+                  </div>
+                  <div class="swot-item swot-t">
+                    <span class="swot-icon"><i class="fas fa-shield-alt"></i></span>
+                    <div class="swot-text"><span class="swot-label">Threats</span> The <strong>TVK wave</strong> directly siphoning the younger generation of AIADMK/PMK loyalist families, and the risk that anti‑incumbency among youth is channelled into new parties rather than consolidating behind the alliance.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-12 col-lg-12">
+              <div class="card h-100">
+                <div class="card-header text-white" style="background:#15803d;">TVK (Tamilaga Vettri Kazhagam – Vijay)</div>
+                <div class="swot-body">
+                  <div class="swot-item swot-s">
+                    <span class="swot-icon"><i class="fas fa-check-circle"></i></span>
+                    <div class="swot-text"><span class="swot-label">Strengths</span> Explosive popularity among <strong>Triplicane mansion dwellers</strong> and first‑time voters (21,000+), leveraging Vijay’s star power and a disciplined urban volunteer base to project a <strong>clean, &ldquo;system‑change&rdquo; image</strong>.</div>
+                  </div>
+                  <div class="swot-item swot-w">
+                    <span class="swot-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                    <div class="swot-text"><span class="swot-label">Weaknesses</span> No proven track record in managing complex <strong>urban crises</strong> like flooding, sewage overhaul or tenement resettlement, and a weak ward‑level patronage network compared to the entrenched Dravidian parties.</div>
+                  </div>
+                  <div class="swot-item swot-o">
+                    <span class="swot-icon"><i class="fas fa-lightbulb"></i></span>
+                    <div class="swot-text"><span class="swot-label">Opportunities</span> Capturing the <strong>&ldquo;aspirational vote&rdquo;</strong> of youth across communities who blame both Dravidian majors for cost‑of‑living pressures and housing crises, and consolidating the &ldquo;change&rdquo; vote that previously went to NTK and other third fronts.</div>
+                  </div>
+                  <div class="swot-item swot-t">
+                    <span class="swot-icon"><i class="fas fa-shield-alt"></i></span>
+                    <div class="swot-text"><span class="swot-label">Threats</span> Being dismissed as a <strong>&ldquo;cinema distraction&rdquo;</strong> by DMK’s machinery and struggling to convince welfare‑dependent families that it can match the <strong>security of DMK’s welfare state</strong>.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-12 col-lg-12">
+              <div class="card h-100">
+                <div class="card-header bg-primary text-white">NTK (Naam Tamilar Katchi – Seeman)</div>
+                <div class="swot-body">
+                  <div class="swot-item swot-s">
+                    <span class="swot-icon"><i class="fas fa-check-circle"></i></span>
+                    <div class="swot-text"><span class="swot-label">Strengths</span> Highly vocal and motivated base among <strong>Marina fisherfolk</strong> and working‑class labour in central Chennai, with Seeman’s <strong>native identity</strong> and ecological rhetoric resonating on Cooum restoration and coastal protection.</div>
+                  </div>
+                  <div class="swot-item swot-w">
+                    <span class="swot-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                    <div class="swot-text"><span class="swot-label">Weaknesses</span> Limited financial and organisational capacity to sustain <strong>high‑cost urban campaigning</strong> in a VVIP seat, and perception among middle‑class professionals that NTK is more an <strong>ideological outfit</strong> than a governance‑ready party.</div>
+                  </div>
+                  <div class="swot-item swot-o">
+                    <span class="swot-icon"><i class="fas fa-lightbulb"></i></span>
+                    <div class="swot-text"><span class="swot-label">Opportunities</span> Consolidating the <strong>&ldquo;angry vote&rdquo;</strong> of coastal residents and market labourers who feel both Dravidian fronts have commodified the city’s resources and heritage, especially around Marina and canal‑side settlements.</div>
+                  </div>
+                  <div class="swot-item swot-t">
+                    <span class="swot-icon"><i class="fas fa-shield-alt"></i></span>
+                    <div class="swot-text"><span class="swot-label">Threats</span> Direct competition from <strong>TVK</strong> for the &ldquo;anti‑Dravidian&rdquo; youth space, whose larger digital and cinematic reach can overshadow NTK’s message in key urban clusters.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 10. Tall Leaders -->
+        <section id="leaders" class="mb-5 leaders-section section-reveal">
+          <h2 class="section-title"><i class="fas fa-crown me-2"></i>10. Tall Leaders</h2>
+          <p class="leaders-intro text-muted">Key political figures who shape the contest in Chepauk‑Thiruvallikeni—incumbents, challengers, disruptors and kingmakers.</p>
+          <div class="row g-4">
+            <div class="col-12 col-lg-12">
+              <div class="card leader-card h-100" style="border-left-color: var(--dmk);">
+                <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+                  <span class="leader-rank">1</span>
+                  <div class="leader-name-wrap"><h3 class="leader-name mb-0">Udhayanidhi Stalin</h3></div>
+                  <span class="badge badge-dmk">Winnability: High</span>
+                </div>
+                <div class="card-body">
+                  <div class="leader-meta">Age: 48 (Born 1977) · Caste: Isai Vellalar · DMK – Sitting MLA (Chepauk‑Thiruvallikeni) &amp; Deputy Chief Minister</div>
+                  <div class="leader-block"><div class="leader-label">Brief Profile</div><div class="leader-text">Grandson of M. Karunanidhi and son of Chief Minister M. K. Stalin, Udhayanidhi transitioned from a successful film production/acting career to become the DMK’s primary youth face. He entered the Assembly in 2021 with a landslide win and was elevated to Deputy CM in 2024, overseeing Sports and Youth Welfare.</div></div>
+                  <div class="leader-block"><div class="leader-label">Public Image &amp; Perception</div><div class="leader-text">Perceived as an energetic, modern face of the Dravidian movement, praised for <strong>visible urban infrastructure upgrades</strong> and youth‑centric programmes, but simultaneously attacked by opponents as the emblem of <strong>&ldquo;dynastic politics&rdquo;</strong>.</div></div>
+                  <div class="leader-block"><div class="leader-label">Accessibility</div><div class="leader-text">High; despite VVIP status, maintains a <strong>high‑tech grievance redressal system</strong> and is frequently present at local sports events, welfare distributions and mansion‑level interactions in Triplicane.</div></div>
+                  <div class="leader-block"><div class="leader-label">Financial Status</div><div class="leader-text">Highly affluent; wealth primarily from cinema (Red Giant Movies) and real estate interests.</div></div>
+                  <div class="leader-block"><div class="leader-label">Area of Influence</div><div class="leader-text">Commands near‑absolute loyalty across central Chennai, with a strong &ldquo;rockstar&rdquo; appeal among first‑time voters, slum tenements and working‑class populations in Triplicane, Chepauk and Chintadripet.</div></div>
+                  <div class="leader-block"><div class="leader-label">Strengths &amp; Weaknesses</div><div class="leader-text"><strong>Strength:</strong> A powerful combination of DMK organisational muscle and personal celebrity, backed by high‑impact projects. <strong>Weakness:</strong> Target of national‑level controversies (e.g. &ldquo;Sanatana&rdquo; remarks) and opposition attempts to frame him as a symbol of hereditary politics.</div></div>
+                  <div class="leader-block"><div class="leader-label">Winnability</div><div class="leader-text">Very High. Chepauk‑Thiruvallikeni is the DMK’s <strong>safest urban seat</strong>, with Udhayanidhi defending a 68.9% vote share. The 2026 question is not whether he wins, but whether he can maintain or expand his record‑breaking margin against a fragmented multi‑cornered opposition.</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-12">
+              <div class="card leader-card h-100" style="border-left-color:#f97316;">
+                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center flex-wrap gap-2">
+                  <span class="leader-rank">2</span>
+                  <div class="leader-name-wrap"><h3 class="leader-name mb-0">Kassali A.V.A</h3></div>
+                  <span class="badge badge-aiadmk">Winnability: Low</span>
+                </div>
+                <div class="card-body">
+                  <div class="leader-meta">Age: 66 (Born 1960) · Caste: Muslim (Lebbai) · PMK – State Treasurer &amp; 2021 Candidate</div>
+                  <div class="leader-block"><div class="leader-label">Brief Profile</div><div class="leader-text">A veteran politician and real‑estate businessman, long positioned as the PMK’s <strong>bridge to the minority community</strong> in Chennai. He contested Chepauk‑Thiruvallikeni in 2021 and finished runner‑up against Udhayanidhi Stalin.</div></div>
+                  <div class="leader-block"><div class="leader-label">Public Image &amp; Perception</div><div class="leader-text">Seen as a moderate face attempting to balance PMK’s community interests with urban minority concerns, particularly among traders and small business owners.</div></div>
+                  <div class="leader-block"><div class="leader-label">Accessibility</div><div class="leader-text">Moderate–High; well‑known among Triplicane trade guilds and specific minority pockets through long‑standing social and business ties.</div></div>
+                  <div class="leader-block"><div class="leader-label">Financial Status</div><div class="leader-text">Substantial; primarily from real estate and textile‑related businesses.</div></div>
+                  <div class="leader-block"><div class="leader-label">Area of Influence</div><div class="leader-text">Influential among <strong>minority traders in Triplicane</strong> and organised Vanniyar pockets within the constituency.</div></div>
+                  <div class="leader-block"><div class="leader-label">Strengths &amp; Weaknesses</div><div class="leader-text"><strong>Strength:</strong> Clean record and seniority within the PMK–AIADMK bloc. <strong>Weakness:</strong> Finds it extremely difficult to break the DMK’s long‑held grip over the Muslim vote bank in central Chennai.</div></div>
+                  <div class="leader-block"><div class="leader-label">Winnability</div><div class="leader-text">Low. Functions primarily as a <strong>&ldquo;vote consolidator&rdquo;</strong> for the alliance; his chances depend on an unprecedented fracture in the DMK’s minority–Dalit base rather than organic growth.</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-12">
+              <div class="card leader-card h-100" style="border-left-color: var(--aiadmk);">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+                  <span class="leader-rank">3</span>
+                  <div class="leader-name-wrap"><h3 class="leader-name mb-0">A. Noorjahan</h3></div>
+                  <span class="badge badge-aiadmk">Winnability: Moderate</span>
+                </div>
+                <div class="card-body">
+                  <div class="leader-meta">Age: 54 (Born 1972) · Caste: Muslim · AIADMK – Minority Wing Leader &amp; Former Candidate</div>
+                  <div class="leader-block"><div class="leader-label">Brief Profile</div><div class="leader-text">A post‑graduate in Tamil and a prominent female face of the AIADMK in Chennai, she contested against J. Anbazhagan in 2016 and polled over <strong>53,000 votes</strong> during the Jayalalithaa wave.</div></div>
+                  <div class="leader-block"><div class="leader-label">Public Image &amp; Perception</div><div class="leader-text">Known as a <strong>scholarly and articulate orator</strong>, with significant influence among minority women and traditional AIADMK cadres.</div></div>
+                  <div class="leader-block"><div class="leader-label">Accessibility</div><div class="leader-text">Moderate; primarily active through AIADMK’s women’s wing and district‑level activities rather than continuous ward‑level presence.</div></div>
+                  <div class="leader-block"><div class="leader-label">Financial Status</div><div class="leader-text">Well‑off, with a comfortable urban middle‑class profile.</div></div>
+                  <div class="leader-block"><div class="leader-label">Area of Influence</div><div class="leader-text">Strong among <strong>AIADMK’s women’s vote bank</strong> and specific minority wards in Triplicane.</div></div>
+                  <div class="leader-block"><div class="leader-label">Strengths &amp; Weaknesses</div><div class="leader-text"><strong>Strength:</strong> High educational credentials and loyalty to the AIADMK old guard. <strong>Weakness:</strong> Has been out of the electoral limelight since 2016 and faces competition from newer youth‑oriented coordinators.</div></div>
+                  <div class="leader-block"><div class="leader-label">Winnability</div><div class="leader-text">Moderate, especially if projected as an alliance candidate who can tap into anti‑incumbency over <strong>housing and resettlement</strong> while retaining AIADMK’s minority goodwill.</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-12">
+              <div class="card leader-card h-100" style="border-left-color:#64748b;">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+                  <span class="leader-rank">4</span>
+                  <div class="leader-name-wrap"><h3 class="leader-name mb-0">M. Thameemun Ansari</h3></div>
+                  <span class="badge badge-dmk">Winnability: Moderate (as Ally)</span>
+                </div>
+                <div class="card-body">
+                  <div class="leader-meta">Age: 49 (Born 1977) · Caste: Muslim · MJK (Manithaneya Jananayaga Katchi) – Founder &amp; Former MLA</div>
+                  <div class="leader-block"><div class="leader-label">Brief Profile</div><div class="leader-text">Charismatic minority‑rights activist who gave the DMK a <strong>tough fight in 2011</strong> under the MMK banner in alliance with AIADMK, later serving as MLA from Nagapattinam (2016–2021). Currently supports the DMK‑led alliance.</div></div>
+                  <div class="leader-block"><div class="leader-label">Public Image &amp; Perception</div><div class="leader-text">Respected as a <strong>&ldquo;radical reformer&rdquo;</strong> and consistent voice for marginalised communities, particularly among Muslim youth and clergy.</div></div>
+                  <div class="leader-block"><div class="leader-label">Accessibility</div><div class="leader-text">High; maintains strong ground presence through fiery speeches, social‑media outreach and frequent visits to Triplicane and Pudupet.</div></div>
+                  <div class="leader-block"><div class="leader-label">Area of Influence</div><div class="leader-text">Significant influence among <strong>Muslim youth in Triplicane</strong> and spare‑parts traders in Pudupet.</div></div>
+                  <div class="leader-block"><div class="leader-label">Strengths &amp; Weaknesses</div><div class="leader-text"><strong>Strength:</strong> Exceptional oratory and credibility with religious leadership and activists. <strong>Weakness:</strong> Limited formal party machinery compared to Dravidian majors.</div></div>
+                  <div class="leader-block"><div class="leader-label">Winnability</div><div class="leader-text">Moderate as a <strong>campaign ally</strong>. Even without contesting, his support is crucial for sealing the <strong>minority block</strong> firmly behind the DMK alliance.</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-12">
+              <div class="card leader-card h-100" style="border-left-color:#0ea5e9;">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+                  <span class="leader-rank">5</span>
+                  <div class="leader-name-wrap"><h3 class="leader-name mb-0">Ayisha Begum</h3></div>
+                  <span class="badge badge-dmk">Winnability: Low (Strategic Disruptor)</span>
+                </div>
+                <div class="card-body">
+                  <div class="leader-meta">Age: ~34 (Born ~1992) · Caste: Muslim · NTK – District Secretary &amp; 2026 Candidate</div>
+                  <div class="leader-block"><div class="leader-label">Brief Profile</div><div class="leader-text">A rising female face of NTK tasked with leading the party’s challenge in one of Chennai’s most prestigious constituencies, focusing on civic issues and Tamil nationalist identity.</div></div>
+                  <div class="leader-block"><div class="leader-label">Public Image &amp; Perception</div><div class="leader-text">Viewed as a bold, articulate &ldquo;native&rdquo; voice who resonates strongly with young voters frustrated by both Dravidian majors.</div></div>
+                  <div class="leader-block"><div class="leader-label">Accessibility</div><div class="leader-text">Very High; frequently conducts street‑corner meetings and protests against <strong>commercial encroachments</strong> and anti‑poor urban policies.</div></div>
+                  <div class="leader-block"><div class="leader-label">Financial Status</div><div class="leader-text">Modest; her campaign relies heavily on NTK’s volunteerism and crowdfunding.</div></div>
+                  <div class="leader-block"><div class="leader-label">Area of Influence</div><div class="leader-text">Growing presence among <strong>first‑time voters and youth</strong> in Chintadripet and Triplicane.</div></div>
+                  <div class="leader-block"><div class="leader-label">Strengths &amp; Weaknesses</div><div class="leader-text"><strong>Strength:</strong> Clean image, strong oratory, and credibility with youth looking for alternatives. <strong>Weakness:</strong> Limited resources and organisational depth in a high‑cost, VVIP urban seat.</div></div>
+                  <div class="leader-block"><div class="leader-label">Winnability</div><div class="leader-text">Low in terms of outright victory; her strategic goal is to <strong>push NTK’s vote share beyond 10%</strong>, acting as a disruptive force to DMK’s total dominance by mobilising youth and protest voters.</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-12">
+              <div class="card leader-card h-100" style="border-left-color:#64748b;">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+                  <span class="leader-rank">6</span>
+                  <div class="leader-name-wrap"><h3 class="leader-name mb-0">Khushbu Sundar</h3></div>
+                  <span class="badge badge-aiadmk">Winnability: Moderate–Low</span>
+                </div>
+                <div class="card-body">
+                  <div class="leader-meta">Age: 55 (Born 1970) · Caste: Muslim (converted) / General · BJP – National Executive Member</div>
+                  <div class="leader-block"><div class="leader-label">Brief Profile</div><div class="leader-text">Popular film actress turned politician, having moved from DMK to Congress and then to BJP. Contested Thousand Lights in 2021 and remains a key BJP face in urban Chennai.</div></div>
+                  <div class="leader-block"><div class="leader-label">Public Image &amp; Perception</div><div class="leader-text">Seen as a glamorous, articulate champion for women, but criticised for frequent party switches.</div></div>
+                  <div class="leader-block"><div class="leader-label">Accessibility</div><div class="leader-text">Moderate; highly visible in national media and high‑profile BJP events, less so in everyday ward‑level mobilisation.</div></div>
+                  <div class="leader-block"><div class="leader-label">Financial Status</div><div class="leader-text">Affluent, backed by a long, successful film career.</div></div>
+                  <div class="leader-block"><div class="leader-label">Area of Influence</div><div class="leader-text">Influence among <strong>urban women, youth fans</strong> and <strong>Brahmin/upper‑caste pockets</strong> of Triplicane.</div></div>
+                  <div class="leader-block"><div class="leader-label">Strengths &amp; Weaknesses</div><div class="leader-text"><strong>Strength:</strong> High name recognition and sharp debating skills. <strong>Weakness:</strong> BJP’s perceived <strong>anti‑minority</strong> stance is a major limitation in a seat with ~25% Muslim population.</div></div>
+                  <div class="leader-block"><div class="leader-label">Winnability</div><div class="leader-text">Moderate–Low, tied closely to the overall strength of the BJP–AIADMK alignment in Chennai. More impactful as a <strong>star campaigner</strong> than as a direct contender here.</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-12">
+              <div class="card leader-card h-100" style="border-left-color:#0ea5e9;">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+                  <span class="leader-rank">7</span>
+                  <div class="leader-name-wrap"><h3 class="leader-name mb-0">C. Anand</h3></div>
+                  <span class="badge badge-tvk">Winnability: Moderate (The “X‑Factor”)</span>
+                </div>
+                <div class="card-body">
+                  <div class="leader-meta">Age: ~42 (Born ~1984) · Caste: OBC (Mudaliar) · TVK – District Coordinator</div>
+                  <div class="leader-block"><div class="leader-label">Brief Profile</div><div class="leader-text">Key organiser for Vijay’s TVK in central Chennai, responsible for converting fan clubs into structured political units.</div></div>
+                  <div class="leader-block"><div class="leader-label">Public Image &amp; Perception</div><div class="leader-text">Seen as a <strong>&ldquo;new‑age&rdquo; organiser</strong> who channels the &ldquo;Vijay factor&rdquo; into booth‑level youth mobilisation.</div></div>
+                  <div class="leader-block"><div class="leader-label">Accessibility</div><div class="leader-text">High; embedded in local <strong>fan‑club and gym/sports‑club networks</strong> across Triplicane and Chepauk.</div></div>
+                  <div class="leader-block"><div class="leader-label">Financial Status</div><div class="leader-text">Comfortable; backed by TVK’s organisational resources and local business supporters.</div></div>
+                  <div class="leader-block"><div class="leader-label">Area of Influence</div><div class="leader-text">Dominant among <strong>Vijay fans and unorganised youth workers</strong> in Pudupet and Triplicane markets.</div></div>
+                  <div class="leader-block"><div class="leader-label">Strengths &amp; Weaknesses</div><div class="leader-text"><strong>Strength:</strong> Ability to mobilise large, enthusiastic youth crowds and convert fandom into political volunteerism. <strong>Weakness:</strong> Lacks a long‑term political track record or detailed policy blueprint, making institutional voters cautious.</div></div>
+                  <div class="leader-block"><div class="leader-label">Winnability</div><div class="leader-text">Moderate as the <strong>&ldquo;X‑Factor&rdquo;</strong>. If TVK touches the 15–20% mark, it can substantially alter the winnability math for all other candidates, even if it falls short of actually capturing the seat.</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 11. Top 5 Deciding Factors -->
+        <section id="deciding" class="mb-5 page-section section-reveal">
+          <h2 class="section-title"><i class="fas fa-scale-balanced me-2"></i>11. Top 5 Deciding Factors</h2>
+          <p class="text-muted mb-4" style="font-size: 14px; max-width: 720px;">Key levers that will decide the 2026 contest in Chepauk‑Thiruvallikeni.</p>
+          <div class="row g-4">
+            <div class="col-12 col-md-6 col-xl-4">
+              <div class="card factor-card factor-1 h-100">
+                <div class="card-body p-4">
+                  <div class="d-flex align-items-start gap-3">
+                    <div class="factor-num">1</div>
+                    <div>
+                      <h3 class="factor-title">The "Resettlement and Rehabilitation" Anxiety</h3>
+                      <p class="factor-body mb-0">The ₹1,281‑crore <strong>Buckingham Canal eco‑restoration</strong> project has sparked intense fear among canal‑side communities like Lock Nagar and Ayothia Kuppam that they will be shifted to distant resettlement sites. Any perception of <strong>forced relocation without in‑situ guarantees</strong> risks a major backlash from traditional DMK booth‑strength clusters.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-4">
+              <div class="card factor-card factor-2 h-100">
+                <div class="card-body p-4">
+                  <div class="d-flex align-items-start gap-3">
+                    <div class="factor-num">2</div>
+                    <div>
+                      <h3 class="factor-title">The "Deputy CM" Referendum</h3>
+                      <p class="factor-body mb-0">As Udhayanidhi’s home seat, the election doubles as a <strong>state‑wide verdict</strong> on his promotion to Deputy CM. Voters will judge him less as a debutant and more on his ability to deliver tangible urban improvements, especially in North Chennai development and Triplicane’s narrow‑lane civic upgrades.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-4">
+              <div class="card factor-card factor-3 h-100">
+                <div class="card-body p-4">
+                  <div class="d-flex align-items-start gap-3">
+                    <div class="factor-num">3</div>
+                    <div>
+                      <h3 class="factor-title">The TVK (Vijay) &amp; Youth "Star War"</h3>
+                      <p class="factor-body mb-0">With over <strong>21,000 first‑time voters</strong> and a massive fan‑base in local theatres and mansions, TVK’s performance among Gen‑Z and students could sharply trim DMK margins. If TVK crosses <strong>15% of the vote</strong>, it signals a deeper generational shift in the capital’s political loyalties.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-6">
+              <div class="card factor-card factor-4 h-100">
+                <div class="card-body p-4">
+                  <div class="d-flex align-items-start gap-3">
+                    <div class="factor-num">4</div>
+                    <div>
+                      <h3 class="factor-title">Heritage vs. Modernisation in Triplicane</h3>
+                      <p class="factor-body mb-0">Persistent <strong>traffic congestion, waterlogging and UGD failures</strong> in Triplicane High Road and surrounding lanes have angered both merchants and middle‑class residents. The side that offers a credible <strong>&ldquo;heritage‑first&rdquo; infrastructure plan</strong>—protecting temples and markets while solving flooding—will capture a crucial swing segment.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-6">
+              <div class="card factor-card factor-5 h-100">
+                <div class="card-body p-4">
+                  <div class="d-flex align-items-start gap-3">
+                    <div class="factor-num">5</div>
+                    <div>
+                      <h3 class="factor-title">Minority Consolidation &amp; Alliance Math</h3>
+                      <p class="factor-body mb-0">The <strong>25% Muslim block</strong> and significant SC presence have historically made this a <strong>secular fortress</strong> for DMK. However, if NTK and TVK peel off enough minority youth under a &ldquo;failed promises&rdquo; narrative, even a small crack in this consolidation could reduce DMK’s comfortable margins and embolden the AIADMK‑led mega‑alliance.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 12. Winning Formula -->
+        <section id="winning" class="mb-5 section-reveal">
+          <h2 class="section-title"><i class="fas fa-flask me-2"></i>12. Winning Formula – Chepauk-Thiruvallikeni</h2>
+          <div class="row g-4 formula-grid">
+            <div class="col-12 col-md-6 col-formula">
+              <div class="formula-item">
+                <div class="d-flex align-items-start">
+                  <span class="formula-num">1</span>
+                  <div>
+                    <h3 class="formula-title">The "Karunanidhi" Legacy Premium</h3>
+                    <p class="formula-body">Frame Chepauk‑Thiruvallikeni as the <strong>ideological home of the DMK</strong>, continuously invoking M. Karunanidhi’s three historic victories here to cement a multi‑generational emotional bond with Triplicane voters.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-formula">
+              <div class="formula-item">
+                <div class="d-flex align-items-start">
+                  <span class="formula-num">2</span>
+                  <div>
+                    <h3 class="formula-title">Minority Block Consolidation (25% Floor)</h3>
+                    <p class="formula-body">Secure explicit endorsements from <strong>Triplicane Jamaats and community elders</strong> so that the 22–25% Muslim vote remains a disciplined, consolidated anchor behind the DMK‑led alliance.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-formula">
+              <div class="formula-item">
+                <div class="d-flex align-items-start">
+                  <span class="formula-num">3</span>
+                  <div>
+                    <h3 class="formula-title">Neutralising the "Resettlement Revolt"</h3>
+                    <p class="formula-body">Offer <strong>written, time‑bound guarantees</strong> for in‑situ resettlement along Cooum and Buckingham Canal and ensure that any eco‑restoration is framed as <strong>&ldquo;upgrade without exile&rdquo;</strong> for canal‑side communities.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-formula">
+              <div class="formula-item">
+                <div class="d-flex align-items-start">
+                  <span class="formula-num">4</span>
+                  <div>
+                    <h3 class="formula-title">The "Mansion" Micro-Management</h3>
+                    <p class="formula-body">Deploy <strong>dedicated mansion‑level organisers</strong> in Triplicane to address safety, rent and basic‑services issues of students and bachelors, converting this floating youth vote into a durable DMK support base.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-formula">
+              <div class="formula-item">
+                <div class="d-flex align-items-start">
+                  <span class="formula-num">5</span>
+                  <div>
+                    <h3 class="formula-title">Star Power vs. Accessibility</h3>
+                    <p class="formula-body">Balance Udhayanidhi’s <strong>ministerial visibility</strong> with a strong on‑ground councillor network and frequent local visits so that voters experience both <strong>VVIP development</strong> and <strong>backyard accessibility</strong>.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-formula">
+              <div class="formula-item">
+                <div class="d-flex align-items-start">
+                  <span class="formula-num">6</span>
+                  <div>
+                    <h3 class="formula-title">Pudupet–Chintadripet Trade Shield</h3>
+                    <p class="formula-body">Assure Mudaliyar and trader communities that <strong>Pudupet spare‑parts</strong> and <strong>Chintadripet fish markets</strong> will be modernised in‑situ rather than displaced, positioning DMK as the <strong>protector of traditional urban commerce</strong>.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-formula">
+              <div class="formula-item">
+                <div class="d-flex align-items-start">
+                  <span class="formula-num">7</span>
+                  <div>
+                    <h3 class="formula-title">Capturing the First-Time 21,000</h3>
+                    <p class="formula-body">Run a <strong>digital‑first youth campaign</strong> with sports, skills and start‑up messaging to prevent TVK from monopolising first‑time voters drawn from Vanniyar and Dalit households.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-formula">
+              <div class="formula-item">
+                <div class="d-flex align-items-start">
+                  <span class="formula-num">8</span>
+                  <div>
+                    <h3 class="formula-title">Women’s Welfare Anchor</h3>
+                    <p class="formula-body">Treat <strong>Magalir Urimai Thogai</strong> and related schemes as the non‑negotiable firewall, ensuring no disruption in payouts and creating women‑only grievance platforms in dense wards.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-formula">
+              <div class="formula-item">
+                <div class="d-flex align-items-start">
+                  <span class="formula-num">9</span>
+                  <div>
+                    <h3 class="formula-title">Managing Service-Sector Aspirations</h3>
+                    <p class="formula-body">Offer a clear roadmap for a <strong>&ldquo;Night Economy&rdquo;</strong> and tourism infrastructure along Marina and Triplicane that directly boosts incomes of hospitality, retail and beach‑side workers.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-formula">
+              <div class="formula-item">
+                <div class="d-flex align-items-start">
+                  <span class="formula-num">10</span>
+                  <div>
+                    <h3 class="formula-title">Anti-Incumbency Dilution via Alliances</h3>
+                    <p class="formula-body">Maintain a broad <strong>&ldquo;rainbow alliance&rdquo;</strong> with VCK and key minority parties (IUML/MMK, etc.) to prevent counter‑consolidation of caste or religious votes behind the opposition.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-formula">
+              <div class="formula-item">
+                <div class="d-flex align-items-start">
+                  <span class="formula-num">11</span>
+                  <div>
+                    <h3 class="formula-title">Addressing "Tax Fatigue"</h3>
+                    <p class="formula-body">Soften resentment over <strong>property and water‑tax hikes</strong> by promising targeted rebates or clearly linking higher levies to visible, ward‑level service improvements.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-formula">
+              <div class="formula-item">
+                <div class="d-flex align-items-start">
+                  <span class="formula-num">12</span>
+                  <div>
+                    <h3 class="formula-title">The "Marina Ecological" Narrative</h3>
+                    <p class="formula-body">Pre‑empt NTK by presenting a <strong>&ldquo;Green Marina&rdquo;</strong> vision that balances tourism development with the traditional rights of fisherfolk, ensuring that ecological improvement does not equal community displacement.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 13. Prediction -->
+        <section id="prediction" class="mb-5 section-reveal">
+          <h2 class="section-title"><i class="fas fa-chart-line me-2"></i>13. Upcoming Election Prediction</h2>
+
+          <div class="card prediction-hero border-0 mb-4 shadow-sm">
+            <div class="card-body p-4">
+              <h3 class="h6 text-uppercase fw-800 text-success mb-3" style="letter-spacing:0.1em;">Prediction</h3>
+              <p class="mb-0 fs-6 lh-lg text-dark">The <strong>DMK (SPA)</strong> holds a strong leaning to retain the Chepauk‑Thiruvallikeni constituency in 2026. The seat remains an <strong>impregnable fortress</strong> for the DMK, bolstered by incumbent Deputy CM Udhayanidhi Stalin’s meteoric rise and his <strong>51.2% victory margin</strong> in 2021. As of March 10th data, the SPA is projected at <strong>52.2%</strong> and NDA at <strong>12.37%</strong>, giving the SPA a <strong>39.83%</strong> lead, with <strong>TVK</strong> at <strong>25.73%</strong> and <strong>NTK+</strong> at <strong>8.57%</strong>.</p>
+            </div>
+          </div>
+
+          <div class="card rationale-block border-0 mb-4 shadow-sm">
+            <div class="card-body p-4">
+              <h3 class="h6 text-uppercase fw-800 mb-3" style="letter-spacing:0.1em; color:#0284c7;">Rationale</h3>
+              <p class="mb-0 fs-6 lh-lg text-dark">In 2021, Udhayanidhi Stalin secured a staggering <strong>68.9%</strong> of the vote. Under the 2026 mega‑alliance, even with 80% transfer efficiency of the PMK’s <strong>17.7%</strong> and AIADMK’s legacy share, the alliance’s projected baseline sits at <strong>32–35%</strong>, trailing the DMK’s floor by nearly <strong>20 points</strong>. The seat is <strong>100% urban</strong> with a high Muslim (~25–30%) and Scheduled Castes (~15%) population that traditionally consolidates behind the DMK. As long as minority consolidation holds and welfare penetration remains visible, the opposition’s path to victory is structurally narrow.</p>
+            </div>
+          </div>
+
+          <div class="card border-0 mb-4 shadow-sm">
+            <div class="card-body p-4">
+              <h3 class="h6 text-uppercase fw-800 mb-3" style="letter-spacing:0.1em;">Vote Share Snapshot (as of March 10)</h3>
+              <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                  <thead class="table-light">
+                    <tr><th>Party / Alliance</th><th>Vote Share %</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>SPA (DMK+)</td><td>52.2%</td></tr>
+                    <tr><td>NDA (AIADMK+)</td><td>12.37%</td></tr>
+                    <tr><td>TVK (Vijay)</td><td>25.73%</td></tr>
+                    <tr><td>NTK+ / Others</td><td>8.57%</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <h3 class="h6 text-uppercase fw-800 text-muted mb-3" style="letter-spacing:0.1em;">Scenarios</h3>
+          <div class="row g-4 mb-4">
+            <div class="col-md-6 col-lg-5">
+              <div class="card h-100">
+                <div class="card-header">Scenario Probability</div>
+                <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                  <div class="chart-container" style="height:200px; width:100%; max-width:220px; margin:0 auto;"><canvas id="chartScenarios"></canvas></div>
+                  <div class="chart-legend d-flex flex-wrap justify-content-center align-items-center gap-3 gap-md-4 mt-2 w-100">
+                    <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#16a34a;"></span><span class="small">Ministerial Sweep (75%)</span></span>
+                    <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#dc2626;"></span><span class="small">Alliance Consolidation (15%)</span></span>
+                    <span class="d-inline-flex align-items-center gap-1"><span class="legend-dot" style="background:#64748b;"></span><span class="small">Gen‑Z Disruption (10%)</span></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-5 col-lg-7">
+              <div class="card h-100 border-0 bg-light">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <div class="row g-2 g-md-3 text-center text-md-start">
+                    <div class="col-12 col-md-12"><strong>Scenario 1 – The Ministerial Sweep (Winning — 75%)</strong> — The DMK leverages Udhayanidhi’s star power and the &ldquo;Dravidian Model&rdquo; urban facelift to win by a margin exceeding <strong>50,000 votes</strong>, reaffirming Chepauk‑Thiruvallikeni as the symbolic core of the party.</div>
+                    <div class="col-12 col-md-12"><strong>Scenario 2 – The Alliance Consolidation (Losing — 15%)</strong> — The AIADMK‑BJP‑PMK alliance frames the election around &ldquo;Family Politics&rdquo; and stagnant drainage, significantly reducing the margin; however, a flip requires a <strong>25% swing</strong>, which remains statistically improbable.</div>
+                    <div class="col-12 col-md-12"><strong>Scenario 3 – The Gen‑Z Disruption (Toss‑Up — 10%)</strong> — TVK and NTK together capture over <strong>25%</strong> of the vote, dipping the DMK’s vote share below <strong>55%</strong> for the first time in a decade and signalling a long‑term generational churn in the seat.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card scenario-card h-100 border-success">
+                <div class="card-header bg-success text-white d-flex align-items-center justify-content-between flex-wrap gap-2">
+                  <span>Scenario 1: The Ministerial Sweep</span>
+                  <span class="scenario-badge bg-white text-success">Winning — 75%</span>
+                </div>
+                <div class="card-body">
+                  <p class="mb-0 small lh-lg text-secondary">The DMK leverages Udhayanidhi’s ministerial profile, urban facelift projects and entrenched Minority–SC backing to retain Chepauk‑Thiruvallikeni with a margin exceeding <strong>50,000 votes</strong>, turning the election into a referendum on the &ldquo;Dravidian Model&rdquo; in Chennai’s core.</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card scenario-card h-100 border-danger">
+                <div class="card-header bg-danger text-white d-flex align-items-center justify-content-between flex-wrap gap-2">
+                  <span>Scenario 2: The Alliance Consolidation</span>
+                  <span class="scenario-badge bg-white text-danger">Losing — 15%</span>
+                </div>
+                <div class="card-body">
+                  <p class="mb-0 small lh-lg text-secondary">The AIADMK‑BJP‑PMK alliance unites merchants, Vanniyar pockets and disenchanted middle‑class voters around themes of <strong>&ldquo;Family Politics&rdquo; and drainage mismanagement</strong>, sharply cutting the DMK’s lead but still falling short of the <strong>25% swing</strong> needed for an upset.</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card scenario-card h-100 border-secondary">
+                <div class="card-header bg-secondary text-white d-flex align-items-center justify-content-between flex-wrap gap-2">
+                  <span>Scenario 3: The &ldquo;Gen‑Z&rdquo; Disruption</span>
+                  <span class="scenario-badge bg-white text-secondary">Toss‑Up — 10%</span>
+                </div>
+                <div class="card-body">
+                  <p class="mb-0 small lh-lg text-secondary">TVK (Vijay) and NTK together cross <strong>25%</strong> of the vote, especially among youth, mansion‑dwellers and protest‑driven segments. The &ldquo;change&rdquo; vote fractures across multiple fronts, preventing a clean opposition consolidation even as the DMK’s vote share dips below <strong>55%</strong> for the first time in a decade.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 14. TVK Factor -->
+        <section id="tvk" class="mb-5 page-section section-reveal">
+          <h2 class="section-title"><i class="fas fa-bolt me-2"></i>14. TVK Factor: Chepauk-Thiruvallikeni</h2>
+          <div class="card tvk-factor border-0 shadow-sm">
+            <div class="card-body p-4">
+              <p class="mb-3">The <strong>TVK (Tamilaga Vettri Kazhagam)</strong> is the ultimate <strong>&ldquo;Urban Disruptor&rdquo;</strong> in Chepauk‑Thiruvallikeni. Vijay’s party has successfully siphoned off a massive segment of the <strong>&ldquo;mansion‑dweller&rdquo; youth</strong> and first‑time voters in Triplicane, who see TVK as a modern alternative to the &ldquo;old‑guard&rdquo; binary. By focusing on <strong>&ldquo;Systemic Transformation&rdquo;</strong> and a corruption‑free urban administration, TVK is directly challenging Udhayanidhi Stalin’s &ldquo;youth icon&rdquo; status in his own backyard.</p>
+              <p class="mb-3">The &ldquo;TVK Factor&rdquo; is especially potent in the high‑density student booths and service‑sector clusters near the Marina. While TVK may not dismantle the DMK’s deep‑rooted ward‑level patronage, its ability to poll <strong>12–18%</strong> of the urban vote will act as a major spoiler, preventing a repeat of the <strong>68%</strong> landslide seen in 2021. The eventual victory margin will be dictated by whether the DMK retains its core minority loyalists or whether TVK’s &ldquo;aspirational surge&rdquo; triggers a broader generational shift.</p>
+              <p class="mb-0">As of March 10th data, TVK’s average projected vote share stands at <strong>25.73%</strong>. While TVK’s presence will prevent a repeat of the 2021 landslide, the SPA’s <strong>39.83%</strong> lead over the NDA makes any spoiler‑driven upset <strong>statistically improbable</strong> in Udhayanidhi Stalin’s personal constituency.</p>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    (function() {
+      // Order must match legend: DMK Stronghold, DMK Favorable, Battleground, PMK Favorable, PMK Stronghold
+      var colors = ['#b91c1c', '#dc2626', '#EAB308', '#22c55e', '#166534'];
+      var labels = ['Udhayanidhi Stalin DMK Stronghold', 'Udhayanidhi Stalin DMK Favorable', 'Battleground', 'Kassali A.V.A PMK Favorable', 'Kassali A.V.A PMK Stronghold'];
+      function split(s) { return s.split(',').map(function(x) { return x.trim(); }).filter(function(x) { return x.length > 0; }); }
+      var stronghold = split('1, 1A, 2, 2A, 3, 4, 5, 6, 6A, 7, 8, 9, 10, 11, 12, 12A, 13, 14, 15, 15A, 16, 16A, 17, 18, 19, 20, 21, 22, 22A, 23, 23A, 24, 24A, 25, 25A, 26, 26A, 27, 27A, 28, 28A, 29, 29A, 30, 30A, 31, 32, 32A, 33, 33A, 34, 34A, 35, 35A, 36, 37, 38, 38A, 39, 39A, 40, 40A, 41, 42, 42A, 43, 43A, 44, 44A, 45, 45A, 46, 46A, 47, 47A, 48, 49, 49A, 50, 50A, 51, 51A, 52, 53, 54, 55, 55A, 56, 56A, 57, 57A, 58, 58A, 59, 60, 60A, 61, 61A, 62, 62A, 63, 63A, 64, 64A, 65, 65A, 66, 66A, 67, 67A, 68, 69, 69A, 70, 70A, 71A, 72, 73, 73A, 74, 74A, 75, 75A, 76, 76A, 77, 78, 78A, 79, 80, 80A, 81, 81A, 82, 82A, 83, 84, 85, 86, 86A, 87, 87A, 88, 88A, 89, 89A, 90, 93, 94, 95, 95A, 96, 96A, 97, 97A, 100, 100A, 105, 105A, 110, 111, 111A, 112, 113, 114, 114A, 115, 117, 119A, 120, 120A, 121, 121A, 122, 122A, 123, 123A, 124, 124A, 125, 126, 126A, 127, 127A, 128, 128A, 129, 129A, 130, 130A, 131, 132, 132A, 133, 134, 135, 136, 137, 137A, 138, 139, 140, 140A, 141, 142, 143, 143A, 144, 145, 146, 147, 148, 148A, 149, 149A, 150, 151, 152, 153, 154, 155, 156, 156A, 157, 158, 159, 160, 160A, 161, 161A, 162, 162A, 163, 163A, 164, 164A, 165, 165A, 166, 167, 168, 169, 169A, 170, 170A, 171, 171A, 172, 172A, 173, 173A, 174, 174A, 175, 175A, 176, 176A, 177, 177A, 178, 178A, 179, 181, 181A, 186, 187, 188, 189, 189A, 190, 191, 191A, 192, 192A, 193, 194, 194A, 195, 195A, 196, 196A, 197, 197A, 198, 199, 199A, 200, 201, 202, 202A, 203, 204, 205, 206, 207, 208, 209, 210, 211, 211A, 212, 213, 214, 215, 216, 217, 217A, 218, 218A, 219, 219A, 220, 220A');
+      var favorable = split('71, 101, 108, 108A, 116, 116A, 119, 180, 180A, 185, 185A');
+      var battleground = split('92A, 107, 118, 183, 184');
+      var vckFavorable = split('91, 91A, 92, 99, 106, 106A, 182');
+      var vckStronghold = split('98, 98A, 102, 102A, 103, 104, 104A, 109, 109A, 182A');
+      var allBooths = [{ list: stronghold, cat: 0 }, { list: favorable, cat: 1 }, { list: battleground, cat: 2 }, { list: vckFavorable, cat: 3 }, { list: vckStronghold, cat: 4 }];
+      var grid = document.getElementById('boothGrid');
+      if (grid) {
+        for (var c = 0; c < allBooths.length; c++) {
+          var item = allBooths[c];
+          for (var i = 0; i < item.list.length; i++) {
+            var boothId = item.list[i];
+            var d = document.createElement('div');
+            d.setAttribute('data-booth', boothId);
+            d.setAttribute('data-category', item.cat);
+            d.setAttribute('title', boothId + ' — ' + labels[item.cat]);
+            d.style.background = colors[item.cat];
+            grid.appendChild(d);
+          }
+        }
+      }
+      var tip = document.getElementById('boothTooltip');
+      if (grid && tip) {
+        document.body.appendChild(tip);
+        function showBoothTip(b, pageX, pageY) {
+          var boothId = b.getAttribute('data-booth');
+          var cat = parseInt(b.getAttribute('data-category'), 10);
+          tip.textContent = boothId + ' — ' + labels[cat];
+          tip.style.left = pageX + 'px';
+          tip.style.top = pageY + 'px';
+          tip.classList.add('is-visible');
+          tip.setAttribute('aria-hidden', 'false');
+        }
+        function hideBoothTip() {
+          tip.classList.remove('is-visible');
+          tip.setAttribute('aria-hidden', 'true');
+        }
+        grid.addEventListener('mouseover', function(e) {
+          var b = e.target.closest('[data-booth]');
+          if (b) showBoothTip(b, e.pageX, e.pageY);
+        });
+        grid.addEventListener('mouseout', function(e) {
+          if (!e.relatedTarget || !grid.contains(e.relatedTarget)) hideBoothTip();
+        });
+        grid.addEventListener('mousemove', function(e) {
+          var b = e.target.closest('[data-booth]');
+          if (b) {
+            tip.style.left = e.pageX + 'px';
+            tip.style.top = e.pageY + 'px';
+            if (!tip.classList.contains('is-visible')) showBoothTip(b, e.pageX, e.pageY);
+          }
+        });
+      }
+    })();
+    document.querySelectorAll('#sidebar .nav-link, .navbar-nav .nav-link, .nav-link-mobile').forEach(function(link) {
+      link.addEventListener('click', function() {
+        document.querySelectorAll('#sidebar .nav-link, .nav-link-mobile').forEach(function(l) { l.classList.remove('active'); });
+        if (this.closest('#sidebar') || this.classList.contains('nav-link-mobile')) this.classList.add('active');
+      });
+    });
+
+    // Scroll spy: set sidebar and offcanvas nav active based on which section is in viewport
+    (function() {
+      var sectionIds = ['dashboard', 'overview', 'snapshot', 'results', 'form20', 'caste', 'blocks', 'parties', 'dynamics', 'issues', 'swot', 'leaders', 'deciding', 'winning', 'prediction', 'tvk'];
+      var navByHref = {};
+      document.querySelectorAll('#sidebar .nav-link[href^="#"]').forEach(function(a) {
+        var id = (a.getAttribute('href') || '').replace('#', '');
+        if (id) navByHref[id] = navByHref[id] ? [navByHref[id], a] : a;
+      });
+      document.querySelectorAll('.nav-link-mobile[href^="#"]').forEach(function(a) {
+        var id = (a.getAttribute('href') || '').replace('#', '');
+        if (id) navByHref[id] = navByHref[id] ? (Array.isArray(navByHref[id]) ? navByHref[id].concat(a) : [navByHref[id], a]) : a;
+      });
+      function setActiveFromScroll() {
+        var top = window.pageYOffset || document.documentElement.scrollTop;
+        var viewportMid = top + (window.innerHeight * 0.35);
+        var activeId = null;
+        for (var i = sectionIds.length - 1; i >= 0; i--) {
+          var el = document.getElementById(sectionIds[i]);
+          if (el && el.offsetTop <= viewportMid) { activeId = sectionIds[i]; break; }
+        }
+        if (!activeId && sectionIds.length) activeId = sectionIds[0];
+        if (activeId && navByHref[activeId]) {
+          document.querySelectorAll('#sidebar .nav-link, .nav-link-mobile').forEach(function(l) { l.classList.remove('active'); });
+          var links = Array.isArray(navByHref[activeId]) ? navByHref[activeId] : [navByHref[activeId]];
+          links.forEach(function(l) { l.classList.add('active'); });
+        }
+      }
+      setActiveFromScroll();
+      window.addEventListener('scroll', function() { requestAnimationFrame(setActiveFromScroll); }, { passive: true });
+    })();
+
+    // --- Viewport-only animations: run only when element is in view (IntersectionObserver) ---
+
+    // .animate-on-scroll: add .visible only when in viewport → transition runs; remove when leaving so it re-animates next time
+    (function() {
+      var els = document.querySelectorAll('.animate-on-scroll');
+      var io = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) {
+          if (e.isIntersecting) e.target.classList.add('visible');
+          else e.target.classList.remove('visible');
+        });
+      }, { rootMargin: '-40px 0px -50px 0px', threshold: 0.1 });
+      els.forEach(function(el) { io.observe(el); });
+    })();
+
+    // Per-element viewport: add .in-view only when that specific element is in viewport (no whole-section animate)
+    (function() {
+      var opts = { rootMargin: '-20px 0px -30px 0px', threshold: 0.08 };
+      var obs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) {
+          if (e.isIntersecting) e.target.classList.add('in-view');
+          else e.target.classList.remove('in-view');
+        });
+      }, opts);
+      document.querySelectorAll('.metric-card').forEach(function(el) { obs.observe(el); });
+      document.querySelectorAll('#swot .row > [class*="col-"] .card').forEach(function(el) { obs.observe(el); });
+      document.querySelectorAll('.section-reveal > *').forEach(function(el) { obs.observe(el); });
+    })();
+    // Tall Leaders: observe section once; when in view, add .in-view to each card with stagger so animation always runs
+    (function() {
+      var section = document.getElementById('leaders');
+      var leaderCards = section ? section.querySelectorAll('.leader-card') : [];
+      if (!section || !leaderCards.length) return;
+      var done = false;
+      var leaderObs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) {
+          if (e.isIntersecting && !done) {
+            done = true;
+            leaderObs.unobserve(section);
+            leaderCards.forEach(function(card, i) {
+              setTimeout(function() { card.classList.add('in-view'); }, i * 120);
+            });
+          }
+        });
+      }, { root: null, rootMargin: '0px 0px -80px 0px', threshold: 0.1 });
+      leaderObs.observe(section);
+    })();
+    // Chart cards already have .animate-on-scroll → they get .visible when that card enters view (first observer above)
+
+    // Charts (Arakkonam data)
+      if (typeof Chart !== 'undefined') {
+      var chartOpt = { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 12 } } } };
+      var noLegend = { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } } };
+      var doughnutAnim = { animateRotate: true, duration: 2200 };
+
+      function createDoughnutChart(canvas) {
+        if (!canvas || Chart.getChart(canvas)) return;
+        var id = canvas.id;
+        if (id === 'chartVoteShare') {
+          new Chart(canvas, {
+            type: 'doughnut',
+            data: {
+              labels: ['DMK 68.92%', 'PMK 17.68%', 'NTK 6.79%', 'IJK 3.03%', 'AMMK 1.38%', 'NOTA 1.52%'],
+              datasets: [{ data: [68.92, 17.68, 6.79, 3.03, 1.38, 1.52], backgroundColor: ['#b91c1c', '#22c55e', '#1e3a8a', '#0ea5e9', '#f97316', '#64748b'], borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }]
+            },
+            options: Object.assign({}, chartOpt, { cutout: '58%', animation: doughnutAnim, plugins: { legend: { display: false } } })
+          });
+        } else if (id === 'chartRuralUrban') {
+          new Chart(canvas, {
+            type: 'doughnut',
+            data: {
+              labels: ['Rural 0%', 'Urban 100%'],
+              datasets: [{ data: [0, 100], backgroundColor: ['#16a34a', '#0ea5e9'], borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }]
+            },
+            options: Object.assign({}, chartOpt, { cutout: '58%', animation: doughnutAnim, plugins: { legend: { display: false } } })
+          });
+        } else if (id === 'chartGender') {
+          var genderRealTotal = 79412 + 84396 + 58;
+          var thirdGenderDisplay = Math.max(50, Math.round(genderRealTotal * 0.02));
+          new Chart(canvas, {
+            type: 'doughnut',
+            data: {
+              labels: ['Male (79,412)', 'Female (84,396)', 'Third Gender (58)'],
+              datasets: [{ data: [79412, 84396, thirdGenderDisplay], backgroundColor: ['#0ea5e9', '#ec4899', '#8b5cf6'], borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }]
+            },
+            options: Object.assign({}, chartOpt, {
+              cutout: '60%',
+              animation: doughnutAnim,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: function(ctx) {
+                      var realValues = [120200, 122230, 70];
+                      var name = ['Male', 'Female', 'Third Gender'][ctx.dataIndex];
+                      var actual = realValues[ctx.dataIndex];
+                      var pct = ((actual / genderRealTotal) * 100).toFixed(2);
+                      return name + ': ' + actual.toLocaleString('en-IN') + ' (' + pct + '%)';
+                    }
+                  }
+                }
+              }
+            })
+          });
+        } else if (id === 'chartRuralUrbanSnapshot') {
+          new Chart(canvas, {
+            type: 'doughnut',
+            data: {
+              labels: ['Rural 0%', 'Urban 100%'],
+              datasets: [{ data: [0, 100], backgroundColor: ['#16a34a', '#0ea5e9'], borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }]
+            },
+            options: Object.assign({}, chartOpt, { cutout: '60%', animation: doughnutAnim, plugins: { legend: { display: false } } })
+          });
+        } else if (id === 'chartScenarios') {
+          new Chart(canvas, {
+            type: 'doughnut',
+            data: {
+              labels: ['Ministerial Sweep 75%', 'Alliance Consolidation 15%', 'Gen‑Z Disruption 10%'],
+              datasets: [{ data: [75, 15, 10], backgroundColor: ['#16a34a', '#dc2626', '#64748b'], borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }]
+            },
+            options: Object.assign({}, chartOpt, { cutout: '55%', animation: doughnutAnim, plugins: { legend: { display: false } } })
+          });
+        }
+      }
+
+      // Doughnut charts: create only when in viewport, destroy when leaving — so they animate every time they come into view
+      var doughnutCanvasIds = ['chartVoteShare', 'chartRuralUrban', 'chartGender', 'chartRuralUrbanSnapshot', 'chartScenarios'];
+      var doughnutObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) {
+          var canvas = e.target;
+          var chart = Chart.getChart(canvas);
+          if (e.isIntersecting) {
+            if (chart) chart.destroy();
+            createDoughnutChart(canvas);
+          } else {
+            if (chart) chart.destroy();
+          }
+        });
+      }, { rootMargin: '0px 0px 0px 0px', threshold: 0.15 });
+      doughnutCanvasIds.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) doughnutObserver.observe(el);
+      });
+
+      if (document.getElementById('chartMargin')) {
+        new Chart(document.getElementById('chartMargin'), {
+          type: 'bar',
+          data: {
+            labels: ['2011', '2016', '2021'],
+            datasets: [{ label: 'Margin (votes)', data: [9203, 14164, 69355], backgroundColor: ['#16a34a', '#eab308', '#ea580c'], borderRadius: 6, borderWidth: 0 }]
+          },
+          options: Object.assign({}, noLegend, { scales: { y: { beginAtZero: true, ticks: { callback: function(v) { return v.toLocaleString('en-IN'); } } }, x: { grid: { display: false } } } })
+        });
+      }
+      if (document.getElementById('chartBooths')) {
+        new Chart(document.getElementById('chartBooths'), {
+          type: 'bar',
+          data: {
+            labels: ['DMK Stronghold', 'DMK Favorable', 'Battleground', 'PMK Favorable', 'PMK Stronghold'],
+            datasets: [{ label: 'Booths', data: [313, 11, 5, 7, 10], backgroundColor: ['#b91c1c', '#dc2626', '#EAB308', '#22c55e', '#166534'], borderRadius: 6, borderWidth: 0 }]
+          },
+          options: Object.assign({}, noLegend, { indexAxis: 'y', scales: { x: { beginAtZero: true }, y: { grid: { display: false } } } })
+        });
+      }
+      if (document.getElementById('chartVoteShareTrend')) {
+        new Chart(document.getElementById('chartVoteShareTrend'), {
+          type: 'bar',
+          data: {
+            labels: ['2011', '2016', '2021'],
+            datasets: [
+              { label: 'DMK', data: [49.43, 48.50, 68.92], backgroundColor: '#b91c1c', borderRadius: 4, borderWidth: 0 },
+              { label: 'AIADMK / MMK / PMK Alliance', data: [42.34, 38.40, 17.68], backgroundColor: '#22c55e', borderRadius: 4, borderWidth: 0 },
+              { label: 'Others (incl. NTK, BJP, IJK)', data: [8.23, 13.10, 13.40], backgroundColor: '#64748b', borderRadius: 4, borderWidth: 0 }
+            ]
+          },
+          options: Object.assign({}, chartOpt, {
+            scales: { x: { grid: { display: false } }, y: { beginAtZero: true, max: 60, ticks: { callback: function(v) { return v + '%'; } } } },
+            plugins: { legend: { display: false } }
+          })
+        });
+      }
+      if (document.getElementById('chartCaste')) {
+        new Chart(document.getElementById('chartCaste'), {
+          type: 'bar',
+          data: {
+            labels: ['Muslim (Minority)', 'Adi Dravidar (SC)', 'Vanniyar (MBC)', 'Senguntha Mudaliyar', 'Brahmin & Upper Caste', 'Christian (Minority)'],
+            datasets: [{ label: 'Population %', data: [24, 16, 14, 11, 7, 5], backgroundColor: ['#16a34a', '#7c3aed', '#f97316', '#0ea5e9', '#eab308', '#64748b'], borderRadius: 6, borderWidth: 0 }]
+          },
+          options: Object.assign({}, noLegend, { indexAxis: 'y', scales: { x: { beginAtZero: true, max: 30, ticks: { callback: function(v) { return v + '%'; } } }, y: { grid: { display: false } } } })
+        });
+      }
+    }
+  </script>
+</body>
+</html>

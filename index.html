@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Secure Page</title>
+
+<style>
+body{
+font-family:Arial;
+text-align:center;
+margin-top:100px;
+}
+
+#content{
+display:none;
+}
+</style>
+
+</head>
+
+<body>
+
+<h2>Enter Access Code</h2>
+
+<input type="password" id="code">
+<button onclick="verify()">Enter</button>
+
+<div id="content">
+
+<iframe src="Chepauk-Thiruvallikeni.html" width="100%" height="800"></iframe>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/otplib@12.0.1/otplib-browser.min.js"></script>
+
+<script>
+
+const secret = "JBSWY3DPEHPK3PXP";
+
+function verify(){
+
+const totp = otplib.authenticator;
+
+const userCode = document.getElementById("code").value;
+
+if(totp.check(userCode, secret)){
+
+document.getElementById("content").style.display="block";
+
+}else{
+
+alert("Invalid Code");
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
